@@ -2,7 +2,28 @@ import { useAuth } from "@/lib/auth-context";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Lock, ShieldCheck, Database, Server } from "lucide-react";
+import { Lock, ShieldCheck, ExternalLink } from "lucide-react";
+
+const examLinks = [
+  {
+    label: "Kelas X",
+    description: "Link ujian untuk siswa kelas X",
+    url: "https://pengumuman-snbt.snpmb.id/",
+    delay: 0.2,
+  },
+  {
+    label: "Kelas XI",
+    description: "Link ujian untuk siswa kelas XI",
+    url: "https://pengumuman-snbt.snpmb.id/",
+    delay: 0.3,
+  },
+  {
+    label: "Kelas XII",
+    description: "Link ujian untuk siswa kelas XII",
+    url: "https://pengumuman-snbt.snpmb.id/",
+    delay: 0.4,
+  },
+];
 
 export default function ProtectedPage() {
   const { isAuthenticated, logout } = useAuth();
@@ -21,9 +42,9 @@ export default function ProtectedPage() {
       <header className="w-full h-16 border-b border-border flex items-center justify-between px-6 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="flex items-center gap-2 text-primary">
           <ShieldCheck className="w-5 h-5" />
-          <span className="font-mono text-sm font-bold tracking-widest">GATE_OPEN</span>
+          <span className="font-mono text-sm font-bold tracking-widest">AKSES DIBERIKAN</span>
         </div>
-        <button 
+        <button
           onClick={() => {
             logout();
             setLocation("/");
@@ -31,46 +52,46 @@ export default function ProtectedPage() {
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-mono text-xs uppercase tracking-widest"
         >
           <Lock className="w-4 h-4" />
-          <span>Lock System</span>
+          <span>Keluar</span>
         </button>
       </header>
 
-      <main className="flex-1 w-full max-w-5xl p-8 flex flex-col gap-12 mt-8">
-        <motion.div 
+      <main className="flex-1 w-full max-w-3xl px-6 py-12 flex flex-col gap-10">
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-4xl md:text-6xl font-sans tracking-tight mb-4">Welcome to the inner sanctum.</h1>
-          <p className="text-muted-foreground text-lg max-w-2xl">
-            You have successfully bypassed the perimeter. All systems are operational and awaiting your command.
+          <h1 className="text-3xl md:text-5xl font-sans tracking-tight mb-3">
+            Link Ujian Siswa
+          </h1>
+          <p className="text-muted-foreground text-base">
+            Pilih kelas Anda dan klik tombol untuk membuka soal ujian.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="p-6 rounded-lg border border-border bg-card hover:border-primary/50 transition-colors group relative overflow-hidden"
-          >
-            <div className="absolute top-0 left-0 w-1 h-full bg-primary transform origin-bottom scale-y-0 group-hover:scale-y-100 transition-transform duration-300" />
-            <Database className="w-8 h-8 text-primary mb-4" />
-            <h3 className="text-xl font-medium mb-2">Core Archives</h3>
-            <p className="text-muted-foreground text-sm">Access the central data repository. All records are currently synced and encrypted.</p>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="p-6 rounded-lg border border-border bg-card hover:border-primary/50 transition-colors group relative overflow-hidden"
-          >
-            <div className="absolute top-0 left-0 w-1 h-full bg-primary transform origin-bottom scale-y-0 group-hover:scale-y-100 transition-transform duration-300" />
-            <Server className="w-8 h-8 text-primary mb-4" />
-            <h3 className="text-xl font-medium mb-2">Network Uplink</h3>
-            <p className="text-muted-foreground text-sm">Active connections to external relays. Monitoring 47 nodes with 0 dropped packets.</p>
-          </motion.div>
+        <div className="flex flex-col gap-4">
+          {examLinks.map((item) => (
+            <motion.a
+              key={item.label}
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: item.delay }}
+              className="group flex items-center justify-between p-6 rounded-lg border border-border bg-card hover:border-primary hover:bg-card/80 transition-all duration-200 relative overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 w-1 h-full bg-primary transform origin-bottom scale-y-0 group-hover:scale-y-100 transition-transform duration-300" />
+              <div className="pl-2">
+                <h2 className="text-xl font-semibold mb-1 font-mono tracking-wide group-hover:text-primary transition-colors">
+                  {item.label}
+                </h2>
+                <p className="text-muted-foreground text-sm">{item.description}</p>
+              </div>
+              <ExternalLink className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0 ml-4" />
+            </motion.a>
+          ))}
         </div>
       </main>
     </div>
