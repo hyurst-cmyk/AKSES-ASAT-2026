@@ -3,13 +3,15 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Token Gate API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: token
+    description: Token operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,67 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /token/verify:
+    post:
+      operationId: verifyToken
+      tags: [token]
+      summary: Verify a token
+      description: Verifies if the provided token is currently valid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TokenInput"
+      responses:
+        "200":
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenVerifyResult"
+
+  /token/status:
+    get:
+      operationId: getTokenStatus
+      tags: [token]
+      summary: Get token rotation status
+      description: Returns seconds remaining until the token rotates
+      responses:
+        "200":
+          description: Token rotation status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenStatus"
+
+  /token/admin:
+    get:
+      operationId: getAdminToken
+      tags: [token]
+      summary: Get current token (admin)
+      description: Returns the current token for admin use. Requires admin secret in header.
+      parameters:
+        - name: x-admin-secret
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Current token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminTokenResult"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResult"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +97,58 @@ components:
       required:
         - status
 
+    TokenInput:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+          description: The token to verify
+
+    TokenVerifyResult:
+      type: object
+      required:
+        - valid
+        - secondsRemaining
+      properties:
+        valid:
+          type: boolean
+          description: Whether the token is valid
+        secondsRemaining:
+          type: integer
+          description: Seconds remaining until token rotates
+
+    TokenStatus:
+      type: object
+      required:
+        - secondsRemaining
+        - windowMinutes
+      properties:
+        secondsRemaining:
+          type: integer
+          description: Seconds remaining until token rotates
+        windowMinutes:
+          type: integer
+          description: Token rotation window in minutes
+
+    AdminTokenResult:
+      type: object
+      required:
+        - token
+        - secondsRemaining
+      properties:
+        token:
+          type: string
+          description: The current active token
+        secondsRemaining:
+          type: integer
+          description: Seconds remaining until token rotates
+
+    ErrorResult:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
