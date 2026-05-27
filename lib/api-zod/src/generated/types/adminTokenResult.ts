@@ -7,8 +7,6 @@
  */
 
 export interface AdminTokenResult {
-  /** The current active token */
   token: string;
-  /** Seconds remaining until token rotates */
   secondsRemaining: number;
 }

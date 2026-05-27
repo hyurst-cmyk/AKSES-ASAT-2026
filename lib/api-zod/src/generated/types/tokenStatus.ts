@@ -7,8 +7,6 @@
  */
 
 export interface TokenStatus {
-  /** Seconds remaining until token rotates */
   secondsRemaining: number;
-  /** Token rotation window in minutes */
   windowMinutes: number;
 }

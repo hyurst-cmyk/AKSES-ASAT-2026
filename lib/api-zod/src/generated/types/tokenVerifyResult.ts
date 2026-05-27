@@ -7,8 +7,6 @@
  */
 
 export interface TokenVerifyResult {
-  /** Whether the token is valid */
   valid: boolean;
-  /** Seconds remaining until token rotates */
   secondsRemaining: number;
 }

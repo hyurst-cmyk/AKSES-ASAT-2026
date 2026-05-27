@@ -7,7 +7,10 @@
  */
 
 export * from './adminTokenResult';
+export * from './appSettings';
+export * from './appSettingsPrimaryColor';
 export * from './errorResult';
+export * from './examLink';
 export * from './healthStatus';
 export * from './tokenInput';
 export * from './tokenStatus';

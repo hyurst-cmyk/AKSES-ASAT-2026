@@ -12,13 +12,14 @@ tags:
     description: Health operations
   - name: token
     description: Token operations
+  - name: settings
+    description: Site settings operations
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -32,7 +33,6 @@ paths:
       operationId: verifyToken
       tags: [token]
       summary: Verify a token
-      description: Verifies if the provided token is currently valid
       requestBody:
         required: true
         content:
@@ -52,7 +52,6 @@ paths:
       operationId: getTokenStatus
       tags: [token]
       summary: Get token rotation status
-      description: Returns seconds remaining until the token rotates
       responses:
         "200":
           description: Token rotation status
@@ -66,7 +65,6 @@ paths:
       operationId: getAdminToken
       tags: [token]
       summary: Get current token (admin)
-      description: Returns the current token for admin use. Requires admin secret in header.
       parameters:
         - name: x-admin-secret
           in: header
@@ -87,6 +85,48 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResult"
 
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get site settings (public)
+      responses:
+        "200":
+          description: Current settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppSettings"
+    put:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update site settings (admin only)
+      parameters:
+        - name: x-admin-secret
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AppSettings"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppSettings"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResult"
+
 components:
   schemas:
     HealthStatus:
@@ -94,61 +134,78 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
     TokenInput:
       type: object
-      required:
-        - token
+      required: [token]
       properties:
         token:
           type: string
-          description: The token to verify
 
     TokenVerifyResult:
       type: object
-      required:
-        - valid
-        - secondsRemaining
+      required: [valid, secondsRemaining]
       properties:
         valid:
           type: boolean
-          description: Whether the token is valid
         secondsRemaining:
           type: integer
-          description: Seconds remaining until token rotates
 
     TokenStatus:
       type: object
-      required:
-        - secondsRemaining
-        - windowMinutes
+      required: [secondsRemaining, windowMinutes]
       properties:
         secondsRemaining:
           type: integer
-          description: Seconds remaining until token rotates
         windowMinutes:
           type: integer
-          description: Token rotation window in minutes
 
     AdminTokenResult:
       type: object
-      required:
-        - token
-        - secondsRemaining
+      required: [token, secondsRemaining]
       properties:
         token:
           type: string
-          description: The current active token
         secondsRemaining:
           type: integer
-          description: Seconds remaining until token rotates
 
     ErrorResult:
       type: object
-      required:
-        - error
+      required: [error]
       properties:
         error:
           type: string
+
+    ExamLink:
+      type: object
+      required: [label, description, url]
+      properties:
+        label:
+          type: string
+          description: Class label e.g. "Kelas X"
+        description:
+          type: string
+          description: Short description
+        url:
+          type: string
+          description: Exam URL
+
+    AppSettings:
+      type: object
+      required: [siteName, siteDescription, primaryColor, examLinks]
+      properties:
+        siteName:
+          type: string
+          description: Site title shown on entry page
+        siteDescription:
+          type: string
+          description: Subtitle shown on entry page
+        primaryColor:
+          type: string
+          enum: [blue, indigo, emerald, rose, slate]
+          description: Primary accent color theme
+        examLinks:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExamLink"

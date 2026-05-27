@@ -9,7 +9,6 @@ import * as zod from 'zod';
 
 
 /**
- * Returns server health status
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
@@ -18,31 +17,28 @@ export const HealthCheckResponse = zod.object({
 
 
 /**
- * Verifies if the provided token is currently valid
  * @summary Verify a token
  */
 export const VerifyTokenBody = zod.object({
-  "token": zod.string().describe('The token to verify')
+  "token": zod.string()
 })
 
 export const VerifyTokenResponse = zod.object({
-  "valid": zod.boolean().describe('Whether the token is valid'),
-  "secondsRemaining": zod.number().describe('Seconds remaining until token rotates')
+  "valid": zod.boolean(),
+  "secondsRemaining": zod.number()
 })
 
 
 /**
- * Returns seconds remaining until the token rotates
  * @summary Get token rotation status
  */
 export const GetTokenStatusResponse = zod.object({
-  "secondsRemaining": zod.number().describe('Seconds remaining until token rotates'),
-  "windowMinutes": zod.number().describe('Token rotation window in minutes')
+  "secondsRemaining": zod.number(),
+  "windowMinutes": zod.number()
 })
 
 
 /**
- * Returns the current token for admin use. Requires admin secret in header.
  * @summary Get current token (admin)
  */
 export const GetAdminTokenHeader = zod.object({
@@ -50,8 +46,53 @@ export const GetAdminTokenHeader = zod.object({
 })
 
 export const GetAdminTokenResponse = zod.object({
-  "token": zod.string().describe('The current active token'),
-  "secondsRemaining": zod.number().describe('Seconds remaining until token rotates')
+  "token": zod.string(),
+  "secondsRemaining": zod.number()
+})
+
+
+/**
+ * @summary Get site settings (public)
+ */
+export const GetSettingsResponse = zod.object({
+  "siteName": zod.string().describe('Site title shown on entry page'),
+  "siteDescription": zod.string().describe('Subtitle shown on entry page'),
+  "primaryColor": zod.enum(['blue', 'indigo', 'emerald', 'rose', 'slate']).describe('Primary accent color theme'),
+  "examLinks": zod.array(zod.object({
+  "label": zod.string().describe('Class label e.g. \"Kelas X\"'),
+  "description": zod.string().describe('Short description'),
+  "url": zod.string().describe('Exam URL')
+}))
+})
+
+
+/**
+ * @summary Update site settings (admin only)
+ */
+export const UpdateSettingsHeader = zod.object({
+  "x-admin-secret": zod.string()
+})
+
+export const UpdateSettingsBody = zod.object({
+  "siteName": zod.string().describe('Site title shown on entry page'),
+  "siteDescription": zod.string().describe('Subtitle shown on entry page'),
+  "primaryColor": zod.enum(['blue', 'indigo', 'emerald', 'rose', 'slate']).describe('Primary accent color theme'),
+  "examLinks": zod.array(zod.object({
+  "label": zod.string().describe('Class label e.g. \"Kelas X\"'),
+  "description": zod.string().describe('Short description'),
+  "url": zod.string().describe('Exam URL')
+}))
+})
+
+export const UpdateSettingsResponse = zod.object({
+  "siteName": zod.string().describe('Site title shown on entry page'),
+  "siteDescription": zod.string().describe('Subtitle shown on entry page'),
+  "primaryColor": zod.enum(['blue', 'indigo', 'emerald', 'rose', 'slate']).describe('Primary accent color theme'),
+  "examLinks": zod.array(zod.object({
+  "label": zod.string().describe('Class label e.g. \"Kelas X\"'),
+  "description": zod.string().describe('Short description'),
+  "url": zod.string().describe('Exam URL')
+}))
 })
 
 

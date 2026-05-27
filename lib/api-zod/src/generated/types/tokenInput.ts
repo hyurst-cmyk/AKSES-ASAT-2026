@@ -7,6 +7,5 @@
  */
 
 export interface TokenInput {
-  /** The token to verify */
   token: string;
 }

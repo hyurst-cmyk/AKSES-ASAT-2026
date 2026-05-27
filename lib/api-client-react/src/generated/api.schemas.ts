@@ -10,32 +10,58 @@ export interface HealthStatus {
 }
 
 export interface TokenInput {
-  /** The token to verify */
   token: string;
 }
 
 export interface TokenVerifyResult {
-  /** Whether the token is valid */
   valid: boolean;
-  /** Seconds remaining until token rotates */
   secondsRemaining: number;
 }
 
 export interface TokenStatus {
-  /** Seconds remaining until token rotates */
   secondsRemaining: number;
-  /** Token rotation window in minutes */
   windowMinutes: number;
 }
 
 export interface AdminTokenResult {
-  /** The current active token */
   token: string;
-  /** Seconds remaining until token rotates */
   secondsRemaining: number;
 }
 
 export interface ErrorResult {
   error: string;
+}
+
+export interface ExamLink {
+  /** Class label e.g. "Kelas X" */
+  label: string;
+  /** Short description */
+  description: string;
+  /** Exam URL */
+  url: string;
+}
+
+/**
+ * Primary accent color theme
+ */
+export type AppSettingsPrimaryColor = typeof AppSettingsPrimaryColor[keyof typeof AppSettingsPrimaryColor];
+
+
+export const AppSettingsPrimaryColor = {
+  blue: 'blue',
+  indigo: 'indigo',
+  emerald: 'emerald',
+  rose: 'rose',
+  slate: 'slate',
+} as const;
+
+export interface AppSettings {
+  /** Site title shown on entry page */
+  siteName: string;
+  /** Subtitle shown on entry page */
+  siteDescription: string;
+  /** Primary accent color theme */
+  primaryColor: AppSettingsPrimaryColor;
+  examLinks: ExamLink[];
 }
 

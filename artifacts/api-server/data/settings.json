@@ -1,0 +1,22 @@
+{
+  "siteName": "Akses Ujian",
+  "siteDescription": "Masukkan kode akses yang berlaku untuk melanjutkan.",
+  "primaryColor": "blue",
+  "examLinks": [
+    {
+      "label": "Kelas X",
+      "description": "Link ujian untuk siswa kelas X",
+      "url": "https://pengumuman-snbt.snpmb.id/"
+    },
+    {
+      "label": "Kelas XI",
+      "description": "Link ujian untuk siswa kelas XI",
+      "url": "https://pengumuman-snbt.snpmb.id/"
+    },
+    {
+      "label": "Kelas XII",
+      "description": "Link ujian untuk siswa kelas XII",
+      "url": "https://pengumuman-snbt.snpmb.id/"
+    }
+  ]
+}
