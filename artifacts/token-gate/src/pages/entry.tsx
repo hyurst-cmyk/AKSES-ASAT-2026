@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { useVerifyToken, useGetTokenStatus } from "@workspace/api-client-react";
@@ -14,8 +14,28 @@ export default function EntryPage() {
   const [isError, setIsError] = useState(false);
   const settings = useSettings();
 
-  const { data: status } = useGetTokenStatus({ query: { refetchInterval: 1000 } });
+  const { data: status } = useGetTokenStatus({ query: { refetchInterval: 10000 } });
   const verify = useVerifyToken();
+
+  const [localSeconds, setLocalSeconds] = useState<number | null>(null);
+  const syncedAtRef = useRef<number>(Date.now());
+
+  useEffect(() => {
+    if (status == null) return;
+    syncedAtRef.current = Date.now();
+    setLocalSeconds(status.secondsRemaining);
+  }, [status]);
+
+  useEffect(() => {
+    if (localSeconds == null) return;
+    if (localSeconds <= 0) return;
+    const id = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - syncedAtRef.current) / 1000);
+      const next = Math.max(0, (status?.secondsRemaining ?? 0) - elapsed);
+      setLocalSeconds(next);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [localSeconds, status?.secondsRemaining]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,12 +83,12 @@ export default function EntryPage() {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="flex flex-col items-center mb-8"
         >
-          {status ? (
+          {status && localSeconds != null ? (
             <>
-              <TimerRing secondsRemaining={status.secondsRemaining} windowMinutes={status.windowMinutes} size={100} />
+              <TimerRing secondsRemaining={localSeconds} windowMinutes={status.windowMinutes} size={100} />
               {!settings.useCustomToken && (
                 <p className="text-xs text-muted-foreground mt-3">
-                  Kode berganti dalam {Math.floor(status.secondsRemaining / 60)}:{(status.secondsRemaining % 60).toString().padStart(2, "0")} menit
+                  Kode berganti dalam {Math.floor(localSeconds / 60)}:{(localSeconds % 60).toString().padStart(2, "0")} menit
                 </p>
               )}
               {settings.useCustomToken && (

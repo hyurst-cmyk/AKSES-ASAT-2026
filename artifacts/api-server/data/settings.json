@@ -2,6 +2,7 @@
   "siteName": "Akses Ujian",
   "siteDescription": "Masukkan kode akses yang berlaku untuk melanjutkan.",
   "primaryColor": "blue",
+  "backgroundStyle": "blue-light",
   "examLinks": [
     {
       "label": "Kelas X",
@@ -18,5 +19,10 @@
       "description": "Link ujian untuk siswa kelas XII",
       "url": "https://pengumuman-snbt.snpmb.id/"
     }
-  ]
+  ],
+  "inactivityTimeoutSeconds": 30,
+  "tokenWindowMinutes": 5,
+  "useCustomToken": false,
+  "customToken": "",
+  "adminPassword": "SMASMA"
 }
