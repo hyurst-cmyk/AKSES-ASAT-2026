@@ -44,73 +44,101 @@ export default function EntryPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] w-full flex flex-col items-center justify-center bg-background relative overflow-hidden">
-      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at center, hsl(var(--primary)) 0%, transparent 40%)', transform: 'scale(1.5)' }} />
-      
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="z-10 flex flex-col items-center max-w-md w-full px-6"
-      >
-        <div className="mb-12">
+    <div className="min-h-[100dvh] w-full flex flex-col items-center justify-center bg-background">
+      <div className="w-full max-w-sm px-6">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-10"
+        >
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 mb-5">
+            <KeyRound className="w-6 h-6 text-primary" />
+          </div>
+          <h1 className="text-2xl font-semibold text-foreground mb-1">Akses Ujian</h1>
+          <p className="text-sm text-muted-foreground">Masukkan kode akses yang berlaku untuk melanjutkan.</p>
+        </motion.div>
+
+        {/* Timer */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="flex flex-col items-center mb-8"
+        >
           {status ? (
-            <TimerRing 
-              secondsRemaining={status.secondsRemaining} 
-              windowMinutes={status.windowMinutes} 
-              size={120} 
-            />
+            <>
+              <TimerRing
+                secondsRemaining={status.secondsRemaining}
+                windowMinutes={status.windowMinutes}
+                size={100}
+              />
+              <p className="text-xs text-muted-foreground mt-3">
+                Kode berganti dalam {Math.floor(status.secondsRemaining / 60)}:{(status.secondsRemaining % 60).toString().padStart(2, '0')} menit
+              </p>
+            </>
           ) : (
-            <div className="w-[120px] h-[120px] rounded-full border border-muted flex items-center justify-center">
-              <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
+            <div className="w-[100px] h-[100px] rounded-full border-2 border-border flex items-center justify-center">
+              <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
             </div>
           )}
-        </div>
+        </motion.div>
 
-        <div className="text-center mb-8">
-          <h1 className="text-2xl tracking-widest uppercase font-mono mb-2 text-primary">Access Sequence</h1>
-          <p className="text-sm text-muted-foreground">Enter the rotating sequence to proceed.</p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="w-full">
-          <motion.div 
-            animate={isError ? { x: [-10, 10, -10, 10, 0] } : {}}
+        {/* Form */}
+        <motion.form
+          onSubmit={handleSubmit}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="flex flex-col gap-3"
+        >
+          <motion.div
+            animate={isError ? { x: [-6, 6, -6, 6, 0] } : {}}
             transition={{ duration: 0.4 }}
-            className="relative"
           >
-            <div className="absolute left-4 top-1/2 -translate-y-1/2">
-              <KeyRound className={`w-5 h-5 ${isError ? "text-destructive" : "text-muted-foreground"}`} />
-            </div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">
+              Kode Akses
+            </label>
             <input
               type="text"
               value={token}
               onChange={(e) => setToken(e.target.value.toUpperCase())}
-              placeholder="ENTER TOKEN"
-              className={`w-full bg-card border-b-2 outline-none h-14 pl-12 pr-4 text-center font-mono text-xl tracking-[0.25em] transition-colors focus:bg-background placeholder:text-muted-foreground/30 ${
-                isError 
-                  ? "border-destructive text-destructive focus:border-destructive" 
-                  : "border-muted focus:border-primary text-foreground"
-              } ${isError ? "glitch" : ""}`}
+              placeholder="Masukkan kode akses"
+              className={`w-full h-11 px-4 rounded-md border text-sm font-mono tracking-widest outline-none transition-all focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-muted-foreground/50 bg-white ${
+                isError
+                  ? "border-destructive text-destructive focus:ring-destructive/20 focus:border-destructive"
+                  : "border-border text-foreground"
+              }`}
               disabled={verify.isPending}
             />
-            {verify.isPending && (
-              <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                <Loader2 className="w-5 h-5 text-primary animate-spin" />
-              </div>
+            {isError && (
+              <p className="text-xs text-destructive mt-1.5">Kode akses tidak valid. Silakan coba lagi.</p>
             )}
           </motion.div>
-          
-          <div className="mt-8 flex justify-center">
-            <button 
-              type="submit"
-              disabled={!token || verify.isPending}
-              className="px-8 py-3 bg-primary text-primary-foreground font-mono font-bold tracking-widest text-sm uppercase hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Initialize
-            </button>
-          </div>
-        </form>
-      </motion.div>
+
+          <button
+            type="submit"
+            disabled={!token || verify.isPending}
+            className="h-11 w-full rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-1"
+          >
+            {verify.isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              "Masuk"
+            )}
+          </button>
+        </motion.form>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="text-center text-xs text-muted-foreground mt-6"
+        >
+          Hubungi pengawas jika Anda belum menerima kode akses.
+        </motion.p>
+      </div>
     </div>
   );
 }

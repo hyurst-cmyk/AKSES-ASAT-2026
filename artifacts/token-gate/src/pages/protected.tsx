@@ -2,26 +2,26 @@ import { useAuth } from "@/lib/auth-context";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Lock, ShieldCheck, ExternalLink } from "lucide-react";
+import { LogOut, ShieldCheck, ExternalLink } from "lucide-react";
 
 const examLinks = [
   {
     label: "Kelas X",
     description: "Link ujian untuk siswa kelas X",
     url: "https://pengumuman-snbt.snpmb.id/",
-    delay: 0.2,
+    delay: 0.15,
   },
   {
     label: "Kelas XI",
     description: "Link ujian untuk siswa kelas XI",
     url: "https://pengumuman-snbt.snpmb.id/",
-    delay: 0.3,
+    delay: 0.25,
   },
   {
     label: "Kelas XII",
     description: "Link ujian untuk siswa kelas XII",
     url: "https://pengumuman-snbt.snpmb.id/",
-    delay: 0.4,
+    delay: 0.35,
   },
 ];
 
@@ -38,61 +38,74 @@ export default function ProtectedPage() {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="min-h-[100dvh] w-full bg-background text-foreground flex flex-col items-center">
-      <header className="w-full h-16 border-b border-border flex items-center justify-between px-6 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+    <div className="min-h-[100dvh] w-full bg-background text-foreground flex flex-col">
+      {/* Header */}
+      <header className="w-full h-14 border-b border-border bg-white flex items-center justify-between px-6 sticky top-0 z-50">
         <div className="flex items-center gap-2 text-primary">
-          <ShieldCheck className="w-5 h-5" />
-          <span className="font-mono text-sm font-bold tracking-widest">AKSES DIBERIKAN</span>
+          <ShieldCheck className="w-4 h-4" />
+          <span className="text-sm font-medium">Akses Diberikan</span>
         </div>
         <button
           onClick={() => {
             logout();
             setLocation("/");
           }}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-mono text-xs uppercase tracking-widest"
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          <Lock className="w-4 h-4" />
-          <span>Keluar</span>
+          <LogOut className="w-4 h-4" />
+          Keluar
         </button>
       </header>
 
-      <main className="flex-1 w-full max-w-3xl px-6 py-12 flex flex-col gap-10">
+      {/* Content */}
+      <main className="flex-1 w-full max-w-2xl mx-auto px-6 py-12 flex flex-col gap-8">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.4 }}
         >
-          <h1 className="text-3xl md:text-5xl font-sans tracking-tight mb-3">
-            Link Ujian Siswa
+          <h1 className="text-2xl font-semibold text-foreground mb-1">
+            Daftar Link Ujian
           </h1>
-          <p className="text-muted-foreground text-base">
-            Pilih kelas Anda dan klik tombol untuk membuka soal ujian.
+          <p className="text-sm text-muted-foreground">
+            Pilih kelas Anda dan klik tombol untuk membuka halaman ujian.
           </p>
         </motion.div>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           {examLinks.map((item) => (
             <motion.a
               key={item.label}
               href={item.url}
               target="_blank"
               rel="noopener noreferrer"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: item.delay }}
-              className="group flex items-center justify-between p-6 rounded-lg border border-border bg-card hover:border-primary hover:bg-card/80 transition-all duration-200 relative overflow-hidden"
+              transition={{ duration: 0.4, delay: item.delay }}
+              className="group flex items-center justify-between bg-white border border-border hover:border-primary hover:shadow-sm rounded-lg px-6 py-5 transition-all duration-200"
             >
-              <div className="absolute top-0 left-0 w-1 h-full bg-primary transform origin-bottom scale-y-0 group-hover:scale-y-100 transition-transform duration-300" />
-              <div className="pl-2">
-                <h2 className="text-xl font-semibold mb-1 font-mono tracking-wide group-hover:text-primary transition-colors">
+              <div>
+                <h2 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">
                   {item.label}
                 </h2>
-                <p className="text-muted-foreground text-sm">{item.description}</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{item.description}</p>
               </div>
-              <ExternalLink className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0 ml-4" />
+              <div className="flex items-center gap-2 text-sm font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-4">
+                Buka
+                <ExternalLink className="w-4 h-4" />
+              </div>
             </motion.a>
           ))}
         </div>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.5 }}
+          className="text-xs text-muted-foreground"
+        >
+          Hubungi pengawas jika mengalami kendala dalam mengakses ujian.
+        </motion.p>
       </main>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShieldAlert, Loader2, ArrowLeft } from "lucide-react";
+import { ShieldCheck, Loader2, ArrowLeft } from "lucide-react";
 import { TimerRing } from "@/components/timer-ring";
 import { Link } from "wouter";
 
@@ -10,7 +10,7 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  const [adminData, setAdminData] = useState<{ token: string, secondsRemaining: number, windowMinutes: number } | null>(null);
+  const [adminData, setAdminData] = useState<{ token: string; secondsRemaining: number; windowMinutes: number } | null>(null);
 
   const authenticate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,9 +24,9 @@ export default function AdminPage() {
       });
       if (!res.ok) throw new Error("Invalid");
       const data = await res.json();
-      setAdminData({ ...data, windowMinutes: 5 }); // Assume 5 min window
+      setAdminData({ ...data, windowMinutes: 5 });
       setIsAuthenticated(true);
-    } catch (err) {
+    } catch {
       setError(true);
       setTimeout(() => setError(false), 500);
     } finally {
@@ -34,7 +34,6 @@ export default function AdminPage() {
     }
   };
 
-  // Poll for admin token if authenticated
   useEffect(() => {
     if (!isAuthenticated || !secret) return;
 
@@ -47,7 +46,7 @@ export default function AdminPage() {
           const data = await res.json();
           setAdminData(prev => ({ ...data, windowMinutes: prev?.windowMinutes || 5 }));
         }
-      } catch (e) {
+      } catch {
         // Silently fail on poll
       }
     }, 1000);
@@ -55,74 +54,107 @@ export default function AdminPage() {
     return () => clearInterval(interval);
   }, [isAuthenticated, secret]);
 
-
   return (
-    <div className="min-h-[100dvh] w-full bg-background flex flex-col items-center justify-center p-6 relative">
-      <Link href="/" className="absolute top-6 left-6 text-muted-foreground hover:text-foreground flex items-center gap-2 font-mono text-sm tracking-widest transition-colors z-50">
-        <ArrowLeft className="w-4 h-4" />
-        RETURN
-      </Link>
+    <div className="min-h-[100dvh] w-full bg-background flex flex-col">
+      {/* Top bar */}
+      <header className="w-full border-b border-border bg-white px-6 h-14 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="w-4 h-4" />
+          Kembali
+        </Link>
+        <div className="flex items-center gap-2 text-primary">
+          <ShieldCheck className="w-4 h-4" />
+          <span className="text-sm font-medium">Panel Admin</span>
+        </div>
+      </header>
 
-      <AnimatePresence mode="wait">
-        {!isAuthenticated ? (
-          <motion.div 
-            key="auth"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.05 }}
-            className="w-full max-w-sm flex flex-col items-center"
-          >
-            <ShieldAlert className="w-12 h-12 text-muted-foreground mb-6" />
-            <h1 className="text-xl font-mono tracking-[0.2em] mb-8 text-center">ADMIN OVERRIDE</h1>
-            <form onSubmit={authenticate} className="w-full flex flex-col gap-4">
-              <input
-                type="password"
-                value={secret}
-                onChange={(e) => setSecret(e.target.value)}
-                placeholder="AUTHORIZATION CODE"
-                className={`w-full bg-card border h-12 px-4 text-center font-mono tracking-widest transition-colors outline-none focus:border-primary ${error ? "border-destructive text-destructive" : "border-border"}`}
-                disabled={isLoading}
-              />
-              <button 
-                type="submit" 
-                disabled={!secret || isLoading}
-                className="h-12 bg-foreground text-background font-mono font-bold tracking-widest hover:bg-muted-foreground transition-colors flex justify-center items-center"
-              >
-                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "AUTHENTICATE"}
-              </button>
-            </form>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="dashboard"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="w-full max-w-2xl flex flex-col items-center"
-          >
-            <div className="text-center mb-12">
-              <h2 className="text-muted-foreground font-mono text-sm tracking-[0.3em] uppercase mb-4">Current Active Token</h2>
-              <div className="text-6xl md:text-8xl font-mono font-bold text-primary tracking-widest tabular-nums">
-                {adminData?.token || "---"}
-              </div>
-            </div>
-
-            {adminData && (
-              <div className="flex flex-col items-center gap-4">
-                <TimerRing 
-                  secondsRemaining={adminData.secondsRemaining} 
-                  windowMinutes={adminData.windowMinutes} 
-                  size={80}
-                  strokeWidth={4}
-                />
-                <div className="font-mono text-sm text-muted-foreground tabular-nums tracking-widest">
-                  {Math.floor(adminData.secondsRemaining / 60).toString().padStart(2, '0')}:
-                  {(adminData.secondsRemaining % 60).toString().padStart(2, '0')}
+      <div className="flex-1 flex items-center justify-center p-6">
+        <AnimatePresence mode="wait">
+          {!isAuthenticated ? (
+            <motion.div
+              key="auth"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              className="w-full max-w-sm"
+            >
+              <div className="bg-white border border-border rounded-lg p-8 shadow-sm">
+                <div className="mb-6">
+                  <h1 className="text-xl font-semibold text-foreground mb-1">Login Admin</h1>
+                  <p className="text-sm text-muted-foreground">Masukkan kode otorisasi untuk melihat token aktif.</p>
                 </div>
+
+                <form onSubmit={authenticate} className="flex flex-col gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">
+                      Kode Otorisasi
+                    </label>
+                    <input
+                      type="password"
+                      value={secret}
+                      onChange={(e) => setSecret(e.target.value)}
+                      placeholder="Masukkan kode otorisasi"
+                      className={`w-full h-11 px-4 rounded-md border text-sm outline-none transition-all focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white placeholder:text-muted-foreground/50 ${
+                        error ? "border-destructive focus:ring-destructive/20" : "border-border"
+                      }`}
+                      disabled={isLoading}
+                    />
+                    {error && (
+                      <p className="text-xs text-destructive mt-1.5">Kode otorisasi tidak valid.</p>
+                    )}
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={!secret || isLoading}
+                    className="h-11 w-full rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-1"
+                  >
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Masuk"}
+                  </button>
+                </form>
               </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="dashboard"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="w-full max-w-md"
+            >
+              <div className="bg-white border border-border rounded-lg p-8 shadow-sm text-center">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-4">
+                  Token Aktif Saat Ini
+                </p>
+                <div className="text-5xl md:text-7xl font-mono font-bold text-primary tracking-[0.15em] tabular-nums mb-8">
+                  {adminData?.token || "---"}
+                </div>
+
+                <div className="flex flex-col items-center gap-2 pt-6 border-t border-border">
+                  <p className="text-xs text-muted-foreground mb-3">Token berganti dalam</p>
+                  {adminData && (
+                    <>
+                      <TimerRing
+                        secondsRemaining={adminData.secondsRemaining}
+                        windowMinutes={adminData.windowMinutes}
+                        size={80}
+                        strokeWidth={5}
+                      />
+                      <p className="text-sm font-mono font-semibold text-foreground tabular-nums mt-1">
+                        {Math.floor(adminData.secondsRemaining / 60).toString().padStart(2, '0')}:
+                        {(adminData.secondsRemaining % 60).toString().padStart(2, '0')}
+                      </p>
+                    </>
+                  )}
+                </div>
+
+                <p className="text-xs text-muted-foreground mt-6">
+                  Bagikan token ini kepada siswa sebelum ujian dimulai.
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
