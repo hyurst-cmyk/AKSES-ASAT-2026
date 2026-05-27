@@ -6,10 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type AppSettingsPrimaryColor = typeof AppSettingsPrimaryColor[keyof typeof AppSettingsPrimaryColor];
+export type AdminSettingsInputPrimaryColor = typeof AdminSettingsInputPrimaryColor[keyof typeof AdminSettingsInputPrimaryColor];
 
 
-export const AppSettingsPrimaryColor = {
+export const AdminSettingsInputPrimaryColor = {
   blue: 'blue',
   indigo: 'indigo',
   emerald: 'emerald',

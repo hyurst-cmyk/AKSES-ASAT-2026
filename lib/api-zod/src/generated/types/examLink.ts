@@ -7,10 +7,7 @@
  */
 
 export interface ExamLink {
-  /** Class label e.g. "Kelas X" */
   label: string;
-  /** Short description */
   description: string;
-  /** Exam URL */
   url: string;
 }

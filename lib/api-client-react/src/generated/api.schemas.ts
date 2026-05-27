@@ -33,17 +33,11 @@ export interface ErrorResult {
 }
 
 export interface ExamLink {
-  /** Class label e.g. "Kelas X" */
   label: string;
-  /** Short description */
   description: string;
-  /** Exam URL */
   url: string;
 }
 
-/**
- * Primary accent color theme
- */
 export type AppSettingsPrimaryColor = typeof AppSettingsPrimaryColor[keyof typeof AppSettingsPrimaryColor];
 
 
@@ -55,13 +49,65 @@ export const AppSettingsPrimaryColor = {
   slate: 'slate',
 } as const;
 
+export type AppSettingsBackgroundStyle = typeof AppSettingsBackgroundStyle[keyof typeof AppSettingsBackgroundStyle];
+
+
+export const AppSettingsBackgroundStyle = {
+  light: 'light',
+  gray: 'gray',
+  'blue-light': 'blue-light',
+  warm: 'warm',
+  gradient: 'gradient',
+} as const;
+
 export interface AppSettings {
-  /** Site title shown on entry page */
   siteName: string;
-  /** Subtitle shown on entry page */
   siteDescription: string;
-  /** Primary accent color theme */
   primaryColor: AppSettingsPrimaryColor;
+  backgroundStyle: AppSettingsBackgroundStyle;
   examLinks: ExamLink[];
+  /** Seconds of inactivity before redirect */
+  inactivityTimeoutSeconds: number;
+  /** How often the token rotates in minutes */
+  tokenWindowMinutes: number;
+  /** Whether a fixed custom token is active */
+  useCustomToken: boolean;
+}
+
+export type AdminSettingsInputPrimaryColor = typeof AdminSettingsInputPrimaryColor[keyof typeof AdminSettingsInputPrimaryColor];
+
+
+export const AdminSettingsInputPrimaryColor = {
+  blue: 'blue',
+  indigo: 'indigo',
+  emerald: 'emerald',
+  rose: 'rose',
+  slate: 'slate',
+} as const;
+
+export type AdminSettingsInputBackgroundStyle = typeof AdminSettingsInputBackgroundStyle[keyof typeof AdminSettingsInputBackgroundStyle];
+
+
+export const AdminSettingsInputBackgroundStyle = {
+  light: 'light',
+  gray: 'gray',
+  'blue-light': 'blue-light',
+  warm: 'warm',
+  gradient: 'gradient',
+} as const;
+
+export interface AdminSettingsInput {
+  siteName: string;
+  siteDescription: string;
+  primaryColor: AdminSettingsInputPrimaryColor;
+  backgroundStyle: AdminSettingsInputBackgroundStyle;
+  examLinks: ExamLink[];
+  inactivityTimeoutSeconds: number;
+  tokenWindowMinutes: number;
+  useCustomToken: boolean;
+  /** Fixed token value (only used when useCustomToken is true) */
+  customToken?: string;
+  /** New admin password (leave empty to keep current) */
+  adminPassword?: string;
 }
 

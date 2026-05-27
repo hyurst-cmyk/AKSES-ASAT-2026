@@ -6,8 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './adminSettingsInput';
+export * from './adminSettingsInputBackgroundStyle';
+export * from './adminSettingsInputPrimaryColor';
 export * from './adminTokenResult';
 export * from './appSettings';
+export * from './appSettingsBackgroundStyle';
 export * from './appSettingsPrimaryColor';
 export * from './errorResult';
 export * from './examLink';

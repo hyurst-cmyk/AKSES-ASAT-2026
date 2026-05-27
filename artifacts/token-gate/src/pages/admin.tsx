@@ -1,21 +1,32 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShieldCheck, Loader2, ArrowLeft, KeyRound, Link2, Palette, Save, Check, RefreshCw } from "lucide-react";
+import {
+  ShieldCheck, Loader2, ArrowLeft, KeyRound, Link2, Palette,
+  Save, Check, Timer, Lock, Eye, EyeOff, RotateCcw,
+} from "lucide-react";
 import { TimerRing } from "@/components/timer-ring";
 import { Link } from "wouter";
-import { THEME_COLORS } from "@/lib/settings-context";
-import type { AppSettings } from "@/lib/settings-context";
+import { THEME_COLORS, BG_CLASSES, type PrimaryColor, type BackgroundStyle } from "@/lib/settings-context";
 
-type Tab = "token" | "links" | "appearance";
+type Tab = "token" | "links" | "appearance" | "timer-token" | "security";
 
-const THEME_OPTIONS: { value: AppSettings["primaryColor"]; label: string; bg: string }[] = [
-  { value: "blue",    label: "Biru",    bg: "hsl(221 83% 40%)" },
-  { value: "indigo",  label: "Indigo",  bg: "hsl(243 75% 50%)" },
-  { value: "emerald", label: "Hijau",   bg: "hsl(160 84% 39%)" },
-  { value: "rose",    label: "Merah",   bg: "hsl(350 89% 50%)" },
-  { value: "slate",   label: "Abu-abu", bg: "hsl(215 25% 35%)" },
+const THEME_OPTIONS: { value: PrimaryColor; label: string }[] = [
+  { value: "blue",    label: "Biru" },
+  { value: "indigo",  label: "Indigo" },
+  { value: "emerald", label: "Hijau" },
+  { value: "rose",    label: "Merah" },
+  { value: "slate",   label: "Abu-abu" },
 ];
 
+const BG_OPTIONS: { value: BackgroundStyle; label: string }[] = [
+  { value: "light",      label: "Putih Bersih" },
+  { value: "gray",       label: "Abu-abu Muda" },
+  { value: "blue-light", label: "Biru Muda" },
+  { value: "warm",       label: "Kuning Hangat" },
+  { value: "gradient",   label: "Gradien" },
+];
+
+// ─── Auth hook ────────────────────────────────────────────────────────────────
 function useAdminAuth() {
   const [secret, setSecret] = useState("");
   const [authed, setAuthed] = useState(false);
@@ -42,90 +53,110 @@ function useAdminAuth() {
   return { secret, setSecret, authed, loading, error, login };
 }
 
+// ─── Save helper ──────────────────────────────────────────────────────────────
+async function savePartial(secret: string, patch: Record<string, unknown>) {
+  const current = await fetch("/api/settings").then((r) => r.json());
+  const res = await fetch("/api/settings", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", "x-admin-secret": secret },
+    body: JSON.stringify({ ...current, ...patch }),
+  });
+  if (!res.ok) throw new Error("Save failed");
+}
+
+// ─── Save button ──────────────────────────────────────────────────────────────
+function SaveBtn({ onClick, saving, saved }: { onClick: () => void; saving: boolean; saved: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={saving}
+      className="h-10 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 w-full"
+    >
+      {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <><Check className="w-4 h-4" />Tersimpan</> : <><Save className="w-4 h-4" />Simpan</>}
+    </button>
+  );
+}
+
+function useSave() {
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const trigger = useCallback(async (fn: () => Promise<void>) => {
+    setSaving(true);
+    try {
+      await fn();
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {}
+    setSaving(false);
+  }, []);
+  return { saving, saved, trigger };
+}
+
+// ─── Token aktif tab ──────────────────────────────────────────────────────────
 function TokenTab({ secret }: { secret: string }) {
   const [data, setData] = useState<{ token: string; secondsRemaining: number } | null>(null);
+  const [useCustom, setUseCustom] = useState(false);
 
   useEffect(() => {
-    const fetch_ = async () => {
+    fetch("/api/settings").then((r) => r.json()).then((d) => setUseCustom(d.useCustomToken ?? false));
+  }, []);
+
+  useEffect(() => {
+    const go = async () => {
       try {
         const res = await fetch("/api/token/admin", { headers: { "x-admin-secret": secret } });
         if (res.ok) setData(await res.json());
       } catch {}
     };
-    fetch_();
-    const iv = setInterval(fetch_, 1000);
+    go();
+    const iv = setInterval(go, 1000);
     return () => clearInterval(iv);
   }, [secret]);
 
   return (
-    <div className="flex flex-col items-center py-6 gap-6">
+    <div className="flex flex-col items-center py-6 gap-5">
+      {useCustom && (
+        <div className="w-full rounded-md bg-amber-50 border border-amber-200 px-4 py-2.5 text-sm text-amber-800 text-center">
+          Token tetap (custom) sedang aktif
+        </div>
+      )}
       <div className="text-center">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-3">Token Aktif Saat Ini</p>
-        <div className="text-5xl md:text-7xl font-mono font-bold text-primary tracking-[0.15em] tabular-nums">
+        <div className="text-5xl md:text-7xl font-mono font-bold text-primary tracking-[0.15em] tabular-nums select-all">
           {data?.token ?? "------"}
         </div>
       </div>
-      {data && (
+      {data && !useCustom && (
         <div className="flex flex-col items-center gap-2 pt-5 border-t border-border w-full">
           <p className="text-xs text-muted-foreground mb-1">Token berganti dalam</p>
           <TimerRing secondsRemaining={data.secondsRemaining} windowMinutes={5} size={80} strokeWidth={5} />
-          <p className="text-sm font-mono font-semibold text-foreground tabular-nums">
+          <p className="text-sm font-mono font-semibold tabular-nums">
             {Math.floor(data.secondsRemaining / 60).toString().padStart(2, "0")}:
             {(data.secondsRemaining % 60).toString().padStart(2, "0")}
           </p>
         </div>
       )}
-      <p className="text-xs text-muted-foreground text-center">Bagikan token ini kepada siswa sebelum ujian dimulai.</p>
+      <p className="text-xs text-muted-foreground text-center">Klik token untuk memilih, lalu bagikan ke siswa.</p>
     </div>
   );
 }
 
+// ─── Link ujian tab ───────────────────────────────────────────────────────────
 function LinksTab({ secret }: { secret: string }) {
   const [links, setLinks] = useState([
-    { label: "Kelas X",   description: "Link ujian untuk siswa kelas X",   url: "" },
-    { label: "Kelas XI",  description: "Link ujian untuk siswa kelas XI",  url: "" },
+    { label: "Kelas X", description: "Link ujian untuk siswa kelas X", url: "" },
+    { label: "Kelas XI", description: "Link ujian untuk siswa kelas XI", url: "" },
     { label: "Kelas XII", description: "Link ujian untuk siswa kelas XII", url: "" },
   ]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const { saving, saved, trigger } = useSave();
 
   useEffect(() => {
-    fetch("/api/settings")
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.examLinks) setLinks(d.examLinks);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    fetch("/api/settings").then((r) => r.json()).then((d) => { if (d.examLinks) setLinks(d.examLinks); setLoading(false); }).catch(() => setLoading(false));
   }, []);
 
-  const updateLink = (i: number, field: "label" | "description" | "url", value: string) => {
-    setLinks((prev) => prev.map((l, idx) => (idx === i ? { ...l, [field]: value } : l)));
-  };
-
-  const addLink = () => {
-    setLinks((prev) => [...prev, { label: `Kelas ${prev.length + 1}`, description: "", url: "" }]);
-  };
-
-  const removeLink = (i: number) => {
-    setLinks((prev) => prev.filter((_, idx) => idx !== i));
-  };
-
-  const save = async () => {
-    setSaving(true);
-    try {
-      const current = await fetch("/api/settings").then((r) => r.json());
-      await fetch("/api/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", "x-admin-secret": secret },
-        body: JSON.stringify({ ...current, examLinks: links }),
-      });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } catch {}
-    setSaving(false);
-  };
+  const update = (i: number, field: keyof typeof links[0], val: string) =>
+    setLinks((p) => p.map((l, idx) => (idx === i ? { ...l, [field]: val } : l)));
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>;
 
@@ -136,100 +167,52 @@ function LinksTab({ secret }: { secret: string }) {
           <div className="flex items-center justify-between">
             <input
               value={link.label}
-              onChange={(e) => updateLink(i, "label", e.target.value)}
+              onChange={(e) => update(i, "label", e.target.value)}
               className="text-sm font-semibold bg-transparent outline-none border-b border-transparent focus:border-primary text-foreground transition-colors"
               placeholder="Nama kelas"
             />
-            <button
-              onClick={() => removeLink(i)}
-              className="text-xs text-muted-foreground hover:text-destructive transition-colors ml-2"
-            >
-              Hapus
-            </button>
+            <button onClick={() => setLinks((p) => p.filter((_, idx) => idx !== i))} className="text-xs text-muted-foreground hover:text-destructive transition-colors ml-2">Hapus</button>
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1">Deskripsi</label>
-            <input
-              value={link.description}
-              onChange={(e) => updateLink(i, "description", e.target.value)}
-              className="w-full h-9 px-3 text-sm border border-border rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white transition-all"
-              placeholder="Deskripsi singkat"
-            />
+            <input value={link.description} onChange={(e) => update(i, "description", e.target.value)} className="w-full h-9 px-3 text-sm border border-border rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white transition-all" placeholder="Deskripsi singkat" />
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1">URL Ujian</label>
-            <input
-              value={link.url}
-              onChange={(e) => updateLink(i, "url", e.target.value)}
-              className="w-full h-9 px-3 text-sm border border-border rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white transition-all font-mono"
-              placeholder="https://..."
-            />
+            <input value={link.url} onChange={(e) => update(i, "url", e.target.value)} className="w-full h-9 px-3 text-sm border border-border rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white transition-all font-mono" placeholder="https://..." />
           </div>
         </div>
       ))}
-
-      <button
-        onClick={addLink}
-        className="text-sm text-primary border border-dashed border-primary/40 rounded-lg py-3 hover:bg-primary/5 transition-colors"
-      >
+      <button onClick={() => setLinks((p) => [...p, { label: `Kelas Baru`, description: "", url: "" }])} className="text-sm text-primary border border-dashed border-primary/40 rounded-lg py-3 hover:bg-primary/5 transition-colors">
         + Tambah Kelas
       </button>
-
-      <button
-        onClick={save}
-        disabled={saving}
-        className="h-10 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-      >
-        {saving ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : saved ? (
-          <><Check className="w-4 h-4" /> Tersimpan</>
-        ) : (
-          <><Save className="w-4 h-4" /> Simpan Perubahan</>
-        )}
-      </button>
+      <SaveBtn onClick={() => trigger(() => savePartial(secret, { examLinks: links }))} saving={saving} saved={saved} />
     </div>
   );
 }
 
+// ─── Tampilan tab ─────────────────────────────────────────────────────────────
 function AppearanceTab({ secret }: { secret: string }) {
   const [siteName, setSiteName] = useState("Akses Ujian");
-  const [siteDescription, setSiteDescription] = useState("Masukkan kode akses yang berlaku untuk melanjutkan.");
-  const [primaryColor, setPrimaryColor] = useState<AppSettings["primaryColor"]>("blue");
+  const [siteDescription, setSiteDescription] = useState("");
+  const [primaryColor, setPrimaryColor] = useState<PrimaryColor>("blue");
+  const [backgroundStyle, setBackgroundStyle] = useState<BackgroundStyle>("light");
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const { saving, saved, trigger } = useSave();
 
   useEffect(() => {
-    fetch("/api/settings")
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.siteName) setSiteName(d.siteName);
-        if (d.siteDescription) setSiteDescription(d.siteDescription);
-        if (d.primaryColor) setPrimaryColor(d.primaryColor);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    fetch("/api/settings").then((r) => r.json()).then((d) => {
+      if (d.siteName) setSiteName(d.siteName);
+      if (d.siteDescription) setSiteDescription(d.siteDescription);
+      if (d.primaryColor) setPrimaryColor(d.primaryColor);
+      if (d.backgroundStyle) setBackgroundStyle(d.backgroundStyle);
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }, []);
 
-  const previewColor = (color: AppSettings["primaryColor"]) => {
-    document.documentElement.style.setProperty("--primary", THEME_COLORS[color]);
-    document.documentElement.style.setProperty("--ring", THEME_COLORS[color]);
-  };
-
-  const save = async () => {
-    setSaving(true);
-    try {
-      const current = await fetch("/api/settings").then((r) => r.json());
-      await fetch("/api/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", "x-admin-secret": secret },
-        body: JSON.stringify({ ...current, siteName, siteDescription, primaryColor }),
-      });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } catch {}
-    setSaving(false);
+  const previewColor = (c: PrimaryColor) => {
+    document.documentElement.style.setProperty("--primary", THEME_COLORS[c]);
+    document.documentElement.style.setProperty("--ring", THEME_COLORS[c]);
   };
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>;
@@ -238,73 +221,236 @@ function AppearanceTab({ secret }: { secret: string }) {
     <div className="flex flex-col gap-5 py-4">
       <div>
         <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Nama Situs</label>
-        <input
-          value={siteName}
-          onChange={(e) => setSiteName(e.target.value)}
-          className="w-full h-10 px-3 text-sm border border-border rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white transition-all"
-          placeholder="Akses Ujian"
-        />
+        <input value={siteName} onChange={(e) => setSiteName(e.target.value)} className="w-full h-10 px-3 text-sm border border-border rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white" />
       </div>
-
       <div>
-        <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Deskripsi Halaman</label>
-        <input
-          value={siteDescription}
-          onChange={(e) => setSiteDescription(e.target.value)}
-          className="w-full h-10 px-3 text-sm border border-border rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white transition-all"
-          placeholder="Masukkan kode akses..."
-        />
+        <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Deskripsi</label>
+        <input value={siteDescription} onChange={(e) => setSiteDescription(e.target.value)} className="w-full h-10 px-3 text-sm border border-border rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white" />
       </div>
-
       <div>
-        <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Warna Tema</label>
-        <div className="flex flex-wrap gap-3">
+        <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Warna Utama</label>
+        <div className="flex flex-wrap gap-2">
           {THEME_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => { setPrimaryColor(opt.value); previewColor(opt.value); }}
-              className={`flex flex-col items-center gap-2 p-2 rounded-lg border-2 transition-all ${primaryColor === opt.value ? "border-primary" : "border-transparent hover:border-border"}`}
-            >
-              <div className="w-10 h-10 rounded-full shadow-sm" style={{ backgroundColor: opt.bg }} />
+            <button key={opt.value} onClick={() => { setPrimaryColor(opt.value); previewColor(opt.value); }}
+              className={`flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 transition-all ${primaryColor === opt.value ? "border-primary" : "border-transparent hover:border-border"}`}>
+              <div className="w-9 h-9 rounded-full shadow-sm" style={{ backgroundColor: `hsl(${THEME_COLORS[opt.value]})` }} />
               <span className="text-xs text-muted-foreground">{opt.label}</span>
             </button>
           ))}
         </div>
       </div>
-
-      <button
-        onClick={save}
-        disabled={saving}
-        className="h-10 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 mt-1"
-      >
-        {saving ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : saved ? (
-          <><Check className="w-4 h-4" /> Tersimpan</>
-        ) : (
-          <><Save className="w-4 h-4" /> Simpan Perubahan</>
-        )}
-      </button>
+      <div>
+        <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Latar Belakang</label>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {BG_OPTIONS.map((opt) => (
+            <button key={opt.value} onClick={() => setBackgroundStyle(opt.value)}
+              className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${backgroundStyle === opt.value ? "border-primary" : "border-border hover:border-primary/50"}`}>
+              <div className={`w-full h-10 rounded-md ${BG_CLASSES[opt.value]}`} />
+              <span className="text-xs text-muted-foreground">{opt.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      <SaveBtn onClick={() => trigger(() => savePartial(secret, { siteName, siteDescription, primaryColor, backgroundStyle }))} saving={saving} saved={saved} />
     </div>
   );
 }
 
+// ─── Timer & Token tab ────────────────────────────────────────────────────────
+function TimerTokenTab({ secret }: { secret: string }) {
+  const [inactivityTimeout, setInactivityTimeout] = useState(120);
+  const [tokenWindowMinutes, setTokenWindowMinutes] = useState(5);
+  const [useCustomToken, setUseCustomToken] = useState(false);
+  const [customToken, setCustomToken] = useState("");
+  const [loading, setLoading] = useState(true);
+  const { saving, saved, trigger } = useSave();
+
+  useEffect(() => {
+    fetch("/api/settings").then((r) => r.json()).then((d) => {
+      if (d.inactivityTimeoutSeconds) setInactivityTimeout(d.inactivityTimeoutSeconds);
+      if (d.tokenWindowMinutes) setTokenWindowMinutes(d.tokenWindowMinutes);
+      if (typeof d.useCustomToken === "boolean") setUseCustomToken(d.useCustomToken);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
+
+  const regenerate = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    setCustomToken(Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join(""));
+  };
+
+  if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>;
+
+  return (
+    <div className="flex flex-col gap-6 py-4">
+      {/* Inactivity timeout */}
+      <div>
+        <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+          Timer Inaktivitas Sesi
+        </label>
+        <p className="text-xs text-muted-foreground mb-3">Siswa akan keluar otomatis jika tidak ada aktivitas selama waktu ini.</p>
+        <div className="grid grid-cols-4 gap-2">
+          {[60, 120, 180, 300].map((s) => (
+            <button key={s} onClick={() => setInactivityTimeout(s)}
+              className={`py-2 text-sm rounded-md border-2 font-medium transition-all ${inactivityTimeout === s ? "border-primary text-primary" : "border-border text-muted-foreground hover:border-primary/50"}`}>
+              {s < 60 ? `${s}d` : `${s / 60}m`}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2 mt-2">
+          <input
+            type="number"
+            min={30}
+            max={3600}
+            value={inactivityTimeout}
+            onChange={(e) => setInactivityTimeout(Number(e.target.value))}
+            className="w-24 h-9 px-3 text-sm border border-border rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white"
+          />
+          <span className="text-sm text-muted-foreground">detik</span>
+        </div>
+      </div>
+
+      <div className="border-t border-border pt-5">
+        <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+          Interval Rotasi Token
+        </label>
+        <p className="text-xs text-muted-foreground mb-3">Seberapa sering token otomatis berganti.</p>
+        <div className="grid grid-cols-4 gap-2">
+          {[5, 10, 15, 30].map((m) => (
+            <button key={m} onClick={() => setTokenWindowMinutes(m)}
+              className={`py-2 text-sm rounded-md border-2 font-medium transition-all ${tokenWindowMinutes === m ? "border-primary text-primary" : "border-border text-muted-foreground hover:border-primary/50"}`}>
+              {m}m
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="border-t border-border pt-5">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider">Token Tetap (Custom)</label>
+            <p className="text-xs text-muted-foreground mt-0.5">Gunakan kode yang tidak berubah otomatis.</p>
+          </div>
+          <button
+            onClick={() => setUseCustomToken((v) => !v)}
+            className={`relative inline-flex h-6 w-11 rounded-full transition-colors ${useCustomToken ? "bg-primary" : "bg-gray-300"}`}
+          >
+            <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform mt-0.5 ${useCustomToken ? "translate-x-5" : "translate-x-0.5"}`} />
+          </button>
+        </div>
+        {useCustomToken && (
+          <div className="flex gap-2 mt-2">
+            <input
+              value={customToken}
+              onChange={(e) => setCustomToken(e.target.value.toUpperCase().slice(0, 12))}
+              placeholder="Masukkan kode (maks. 12 karakter)"
+              className="flex-1 h-9 px-3 text-sm border border-border rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white font-mono tracking-widest"
+            />
+            <button onClick={regenerate} title="Buat kode acak" className="h-9 w-9 flex items-center justify-center border border-border rounded-md hover:border-primary transition-colors">
+              <RotateCcw className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </div>
+        )}
+      </div>
+
+      <SaveBtn
+        onClick={() => trigger(() => savePartial(secret, {
+          inactivityTimeoutSeconds: inactivityTimeout,
+          tokenWindowMinutes,
+          useCustomToken,
+          customToken: useCustomToken ? customToken : "",
+        }))}
+        saving={saving}
+        saved={saved}
+      />
+    </div>
+  );
+}
+
+// ─── Keamanan tab ─────────────────────────────────────────────────────────────
+function SecurityTab({ secret }: { secret: string }) {
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [error, setError] = useState("");
+  const { saving, saved, trigger } = useSave();
+
+  const handleSave = () => {
+    if (!newPassword) { setError("Password baru tidak boleh kosong."); return; }
+    if (newPassword !== confirmPassword) { setError("Konfirmasi password tidak cocok."); return; }
+    if (newPassword.length < 6) { setError("Password minimal 6 karakter."); return; }
+    setError("");
+    trigger(async () => {
+      await savePartial(secret, { adminPassword: newPassword });
+      setNewPassword("");
+      setConfirmPassword("");
+    });
+  };
+
+  return (
+    <div className="flex flex-col gap-5 py-4">
+      <div className="rounded-md bg-blue-50 border border-blue-200 px-4 py-3 text-sm text-blue-800">
+        Kode otorisasi bawaan (SESSION_SECRET) tetap bisa digunakan sebagai cadangan meski Anda mengganti password di sini.
+      </div>
+
+      <div>
+        <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Password Baru</label>
+        <div className="relative">
+          <input
+            type={showNew ? "text" : "password"}
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            className="w-full h-10 px-3 pr-10 text-sm border border-border rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white"
+            placeholder="Minimal 6 karakter"
+          />
+          <button type="button" onClick={() => setShowNew((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+            {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Konfirmasi Password</label>
+        <div className="relative">
+          <input
+            type={showConfirm ? "text" : "password"}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="w-full h-10 px-3 pr-10 text-sm border border-border rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white"
+            placeholder="Ulangi password baru"
+          />
+          <button type="button" onClick={() => setShowConfirm((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+            {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+        </div>
+      </div>
+
+      {error && <p className="text-xs text-destructive">{error}</p>}
+
+      <SaveBtn onClick={handleSave} saving={saving} saved={saved} />
+    </div>
+  );
+}
+
+// ─── Main admin page ──────────────────────────────────────────────────────────
 export default function AdminPage() {
   const auth = useAdminAuth();
   const [tab, setTab] = useState<Tab>("token");
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: "token",      label: "Token Aktif",  icon: <KeyRound className="w-4 h-4" /> },
-    { id: "links",      label: "Link Ujian",   icon: <Link2 className="w-4 h-4" /> },
-    { id: "appearance", label: "Tampilan",     icon: <Palette className="w-4 h-4" /> },
+    { id: "token",       label: "Token",      icon: <KeyRound className="w-4 h-4" /> },
+    { id: "links",       label: "Link Ujian", icon: <Link2 className="w-4 h-4" /> },
+    { id: "appearance",  label: "Tampilan",   icon: <Palette className="w-4 h-4" /> },
+    { id: "timer-token", label: "Timer",      icon: <Timer className="w-4 h-4" /> },
+    { id: "security",    label: "Keamanan",   icon: <Lock className="w-4 h-4" /> },
   ];
 
   return (
     <div className="min-h-[100dvh] w-full bg-background flex flex-col">
       <header className="w-full border-b border-border bg-white px-6 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-          <ArrowLeft className="w-4 h-4" />
-          Kembali
+          <ArrowLeft className="w-4 h-4" />Kembali
         </Link>
         <div className="flex items-center gap-2 text-primary">
           <ShieldCheck className="w-4 h-4" />
@@ -312,34 +458,23 @@ export default function AdminPage() {
         </div>
       </header>
 
-      <div className="flex-1 flex items-start justify-center p-6">
+      <div className="flex-1 flex items-start justify-center p-4 sm:p-6">
         <div className="w-full max-w-lg">
           <AnimatePresence mode="wait">
             {!auth.authed ? (
-              <motion.div
-                key="auth"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                className="mt-8"
-              >
+              <motion.div key="auth" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="mt-8">
                 <div className="bg-white border border-border rounded-lg p-8 shadow-sm">
                   <h1 className="text-xl font-semibold mb-1">Login Admin</h1>
                   <p className="text-sm text-muted-foreground mb-6">Masukkan kode otorisasi untuk mengelola pengaturan situs.</p>
-
                   <form onSubmit={auth.login} className="flex flex-col gap-3">
                     <div>
-                      <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5">
-                        Kode Otorisasi
-                      </label>
+                      <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5">Kode Otorisasi</label>
                       <input
                         type="password"
                         value={auth.secret}
                         onChange={(e) => auth.setSecret(e.target.value)}
                         placeholder="Masukkan kode otorisasi"
-                        className={`w-full h-11 px-4 rounded-md border text-sm outline-none transition-all focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white placeholder:text-muted-foreground/50 ${
-                          auth.error ? "border-destructive focus:ring-destructive/20" : "border-border"
-                        }`}
+                        className={`w-full h-11 px-4 rounded-md border text-sm outline-none transition-all focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white placeholder:text-muted-foreground/50 ${auth.error ? "border-destructive focus:ring-destructive/20" : "border-border"}`}
                         disabled={auth.loading}
                       />
                       {auth.error && <p className="text-xs text-destructive mt-1.5">Kode otorisasi tidak valid.</p>}
@@ -356,20 +491,16 @@ export default function AdminPage() {
               </motion.div>
             ) : (
               <motion.div key="dashboard" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mt-4">
-                {/* Tabs */}
-                <div className="flex gap-1 bg-muted rounded-lg p-1 mb-4">
+                {/* Tab bar */}
+                <div className="flex gap-0.5 bg-muted rounded-lg p-1 mb-4 overflow-x-auto">
                   {tabs.map((t) => (
                     <button
                       key={t.id}
                       onClick={() => setTab(t.id)}
-                      className={`flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-md transition-all ${
-                        tab === t.id
-                          ? "bg-white text-foreground shadow-sm"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
+                      className={`flex-shrink-0 flex items-center gap-1.5 text-xs font-medium py-2 px-3 rounded-md transition-all whitespace-nowrap ${tab === t.id ? "bg-white text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                     >
                       {t.icon}
-                      <span className="hidden sm:inline">{t.label}</span>
+                      <span>{t.label}</span>
                     </button>
                   ))}
                 </div>
@@ -382,11 +513,13 @@ export default function AdminPage() {
                       initial={{ opacity: 0, x: 8 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -8 }}
-                      transition={{ duration: 0.18 }}
+                      transition={{ duration: 0.15 }}
                     >
-                      {tab === "token"      && <TokenTab secret={auth.secret} />}
-                      {tab === "links"      && <LinksTab secret={auth.secret} />}
-                      {tab === "appearance" && <AppearanceTab secret={auth.secret} />}
+                      {tab === "token"       && <TokenTab secret={auth.secret} />}
+                      {tab === "links"       && <LinksTab secret={auth.secret} />}
+                      {tab === "appearance"  && <AppearanceTab secret={auth.secret} />}
+                      {tab === "timer-token" && <TimerTokenTab secret={auth.secret} />}
+                      {tab === "security"    && <SecurityTab secret={auth.secret} />}
                     </motion.div>
                   </AnimatePresence>
                 </div>

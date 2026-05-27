@@ -112,7 +112,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AppSettings"
+              $ref: "#/components/schemas/AdminSettingsInput"
       responses:
         "200":
           description: Updated settings
@@ -183,29 +183,82 @@ components:
       properties:
         label:
           type: string
-          description: Class label e.g. "Kelas X"
         description:
           type: string
-          description: Short description
         url:
           type: string
-          description: Exam URL
 
     AppSettings:
       type: object
-      required: [siteName, siteDescription, primaryColor, examLinks]
+      required:
+        - siteName
+        - siteDescription
+        - primaryColor
+        - backgroundStyle
+        - examLinks
+        - inactivityTimeoutSeconds
+        - tokenWindowMinutes
+        - useCustomToken
       properties:
         siteName:
           type: string
-          description: Site title shown on entry page
         siteDescription:
           type: string
-          description: Subtitle shown on entry page
         primaryColor:
           type: string
           enum: [blue, indigo, emerald, rose, slate]
-          description: Primary accent color theme
+        backgroundStyle:
+          type: string
+          enum: [light, gray, blue-light, warm, gradient]
         examLinks:
           type: array
           items:
             $ref: "#/components/schemas/ExamLink"
+        inactivityTimeoutSeconds:
+          type: integer
+          description: Seconds of inactivity before redirect
+        tokenWindowMinutes:
+          type: integer
+          description: How often the token rotates in minutes
+        useCustomToken:
+          type: boolean
+          description: Whether a fixed custom token is active
+
+    AdminSettingsInput:
+      type: object
+      required:
+        - siteName
+        - siteDescription
+        - primaryColor
+        - backgroundStyle
+        - examLinks
+        - inactivityTimeoutSeconds
+        - tokenWindowMinutes
+        - useCustomToken
+      properties:
+        siteName:
+          type: string
+        siteDescription:
+          type: string
+        primaryColor:
+          type: string
+          enum: [blue, indigo, emerald, rose, slate]
+        backgroundStyle:
+          type: string
+          enum: [light, gray, blue-light, warm, gradient]
+        examLinks:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExamLink"
+        inactivityTimeoutSeconds:
+          type: integer
+        tokenWindowMinutes:
+          type: integer
+        useCustomToken:
+          type: boolean
+        customToken:
+          type: string
+          description: Fixed token value (only used when useCustomToken is true)
+        adminPassword:
+          type: string
+          description: New admin password (leave empty to keep current)

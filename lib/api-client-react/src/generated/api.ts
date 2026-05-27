@@ -20,6 +20,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AdminSettingsInput,
   AdminTokenResult,
   AppSettings,
   ErrorResult,
@@ -431,7 +432,7 @@ export const getUpdateSettingsUrl = () => {
 /**
  * @summary Update site settings (admin only)
  */
-export const updateSettings = async (appSettings: AppSettings, options?: RequestInit): Promise<AppSettings> => {
+export const updateSettings = async (adminSettingsInput: AdminSettingsInput, options?: RequestInit): Promise<AppSettings> => {
 
   return customFetch<AppSettings>(getUpdateSettingsUrl(),
   {
@@ -439,7 +440,7 @@ export const updateSettings = async (appSettings: AppSettings, options?: Request
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
     body: JSON.stringify(
-      appSettings,)
+      adminSettingsInput,)
   }
 );}
 
@@ -447,8 +448,8 @@ export const updateSettings = async (appSettings: AppSettings, options?: Request
 
 
 export const getUpdateSettingsMutationOptions = <TError = ErrorType<ErrorResult>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSettings>>, TError,{data: BodyType<AppSettings>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateSettings>>, TError,{data: BodyType<AppSettings>}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSettings>>, TError,{data: BodyType<AdminSettingsInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateSettings>>, TError,{data: BodyType<AdminSettingsInput>}, TContext> => {
 
 const mutationKey = ['updateSettings'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -460,7 +461,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSettings>>, {data: BodyType<AppSettings>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSettings>>, {data: BodyType<AdminSettingsInput>}> = (props) => {
           const {data} = props ?? {};
 
           return  updateSettings(data,requestOptions)
@@ -474,18 +475,18 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type UpdateSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof updateSettings>>>
-    export type UpdateSettingsMutationBody = BodyType<AppSettings>
+    export type UpdateSettingsMutationBody = BodyType<AdminSettingsInput>
     export type UpdateSettingsMutationError = ErrorType<ErrorResult>
 
     /**
  * @summary Update site settings (admin only)
  */
 export const useUpdateSettings = <TError = ErrorType<ErrorResult>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSettings>>, TError,{data: BodyType<AppSettings>}, TContext>, request?: SecondParameter<typeof customFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSettings>>, TError,{data: BodyType<AdminSettingsInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof updateSettings>>,
         TError,
-        {data: BodyType<AppSettings>},
+        {data: BodyType<AdminSettingsInput>},
         TContext
       > => {
       return useMutation(getUpdateSettingsMutationOptions(options));

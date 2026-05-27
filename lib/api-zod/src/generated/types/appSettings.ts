@@ -5,15 +5,20 @@
  * Token Gate API
  * OpenAPI spec version: 0.1.0
  */
+import type { AppSettingsBackgroundStyle } from './appSettingsBackgroundStyle';
 import type { AppSettingsPrimaryColor } from './appSettingsPrimaryColor';
 import type { ExamLink } from './examLink';
 
 export interface AppSettings {
-  /** Site title shown on entry page */
   siteName: string;
-  /** Subtitle shown on entry page */
   siteDescription: string;
-  /** Primary accent color theme */
   primaryColor: AppSettingsPrimaryColor;
+  backgroundStyle: AppSettingsBackgroundStyle;
   examLinks: ExamLink[];
+  /** Seconds of inactivity before redirect */
+  inactivityTimeoutSeconds: number;
+  /** How often the token rotates in minutes */
+  tokenWindowMinutes: number;
+  /** Whether a fixed custom token is active */
+  useCustomToken: boolean;
 }

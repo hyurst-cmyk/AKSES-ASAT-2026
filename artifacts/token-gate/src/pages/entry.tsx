@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { useVerifyToken, useGetTokenStatus } from "@workspace/api-client-react";
 import { useAuth } from "@/lib/auth-context";
-import { useSettings } from "@/lib/settings-context";
+import { useSettings, BG_CLASSES } from "@/lib/settings-context";
 import { Loader2, KeyRound } from "lucide-react";
 import { TimerRing } from "@/components/timer-ring";
 
@@ -42,7 +42,7 @@ export default function EntryPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] w-full flex flex-col items-center justify-center bg-background">
+    <div className={`min-h-[100dvh] w-full flex flex-col items-center justify-center ${BG_CLASSES[settings.backgroundStyle]}`}>
       <div className="w-full max-w-sm px-6">
         <motion.div
           initial={{ opacity: 0, y: -12 }}
@@ -66,9 +66,14 @@ export default function EntryPage() {
           {status ? (
             <>
               <TimerRing secondsRemaining={status.secondsRemaining} windowMinutes={status.windowMinutes} size={100} />
-              <p className="text-xs text-muted-foreground mt-3">
-                Kode berganti dalam {Math.floor(status.secondsRemaining / 60)}:{(status.secondsRemaining % 60).toString().padStart(2, "0")} menit
-              </p>
+              {!settings.useCustomToken && (
+                <p className="text-xs text-muted-foreground mt-3">
+                  Kode berganti dalam {Math.floor(status.secondsRemaining / 60)}:{(status.secondsRemaining % 60).toString().padStart(2, "0")} menit
+                </p>
+              )}
+              {settings.useCustomToken && (
+                <p className="text-xs text-muted-foreground mt-3">Kode akses tetap aktif</p>
+              )}
             </>
           ) : (
             <div className="w-[100px] h-[100px] rounded-full border-2 border-border flex items-center justify-center">
@@ -94,9 +99,7 @@ export default function EntryPage() {
               onChange={(e) => setToken(e.target.value.toUpperCase())}
               placeholder="Masukkan kode akses"
               className={`w-full h-11 px-4 rounded-md border text-sm font-mono tracking-widest outline-none transition-all focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-muted-foreground/50 bg-white ${
-                isError
-                  ? "border-destructive text-destructive focus:ring-destructive/20 focus:border-destructive"
-                  : "border-border text-foreground"
+                isError ? "border-destructive text-destructive focus:ring-destructive/20 focus:border-destructive" : "border-border text-foreground"
               }`}
               disabled={verify.isPending}
             />

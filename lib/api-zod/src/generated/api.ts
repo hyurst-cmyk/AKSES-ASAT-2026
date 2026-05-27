@@ -55,14 +55,18 @@ export const GetAdminTokenResponse = zod.object({
  * @summary Get site settings (public)
  */
 export const GetSettingsResponse = zod.object({
-  "siteName": zod.string().describe('Site title shown on entry page'),
-  "siteDescription": zod.string().describe('Subtitle shown on entry page'),
-  "primaryColor": zod.enum(['blue', 'indigo', 'emerald', 'rose', 'slate']).describe('Primary accent color theme'),
+  "siteName": zod.string(),
+  "siteDescription": zod.string(),
+  "primaryColor": zod.enum(['blue', 'indigo', 'emerald', 'rose', 'slate']),
+  "backgroundStyle": zod.enum(['light', 'gray', 'blue-light', 'warm', 'gradient']),
   "examLinks": zod.array(zod.object({
-  "label": zod.string().describe('Class label e.g. \"Kelas X\"'),
-  "description": zod.string().describe('Short description'),
-  "url": zod.string().describe('Exam URL')
-}))
+  "label": zod.string(),
+  "description": zod.string(),
+  "url": zod.string()
+})),
+  "inactivityTimeoutSeconds": zod.number().describe('Seconds of inactivity before redirect'),
+  "tokenWindowMinutes": zod.number().describe('How often the token rotates in minutes'),
+  "useCustomToken": zod.boolean().describe('Whether a fixed custom token is active')
 })
 
 
@@ -74,25 +78,35 @@ export const UpdateSettingsHeader = zod.object({
 })
 
 export const UpdateSettingsBody = zod.object({
-  "siteName": zod.string().describe('Site title shown on entry page'),
-  "siteDescription": zod.string().describe('Subtitle shown on entry page'),
-  "primaryColor": zod.enum(['blue', 'indigo', 'emerald', 'rose', 'slate']).describe('Primary accent color theme'),
+  "siteName": zod.string(),
+  "siteDescription": zod.string(),
+  "primaryColor": zod.enum(['blue', 'indigo', 'emerald', 'rose', 'slate']),
+  "backgroundStyle": zod.enum(['light', 'gray', 'blue-light', 'warm', 'gradient']),
   "examLinks": zod.array(zod.object({
-  "label": zod.string().describe('Class label e.g. \"Kelas X\"'),
-  "description": zod.string().describe('Short description'),
-  "url": zod.string().describe('Exam URL')
-}))
+  "label": zod.string(),
+  "description": zod.string(),
+  "url": zod.string()
+})),
+  "inactivityTimeoutSeconds": zod.number(),
+  "tokenWindowMinutes": zod.number(),
+  "useCustomToken": zod.boolean(),
+  "customToken": zod.string().optional().describe('Fixed token value (only used when useCustomToken is true)'),
+  "adminPassword": zod.string().optional().describe('New admin password (leave empty to keep current)')
 })
 
 export const UpdateSettingsResponse = zod.object({
-  "siteName": zod.string().describe('Site title shown on entry page'),
-  "siteDescription": zod.string().describe('Subtitle shown on entry page'),
-  "primaryColor": zod.enum(['blue', 'indigo', 'emerald', 'rose', 'slate']).describe('Primary accent color theme'),
+  "siteName": zod.string(),
+  "siteDescription": zod.string(),
+  "primaryColor": zod.enum(['blue', 'indigo', 'emerald', 'rose', 'slate']),
+  "backgroundStyle": zod.enum(['light', 'gray', 'blue-light', 'warm', 'gradient']),
   "examLinks": zod.array(zod.object({
-  "label": zod.string().describe('Class label e.g. \"Kelas X\"'),
-  "description": zod.string().describe('Short description'),
-  "url": zod.string().describe('Exam URL')
-}))
+  "label": zod.string(),
+  "description": zod.string(),
+  "url": zod.string()
+})),
+  "inactivityTimeoutSeconds": zod.number().describe('Seconds of inactivity before redirect'),
+  "tokenWindowMinutes": zod.number().describe('How often the token rotates in minutes'),
+  "useCustomToken": zod.boolean().describe('Whether a fixed custom token is active')
 })
 
 
