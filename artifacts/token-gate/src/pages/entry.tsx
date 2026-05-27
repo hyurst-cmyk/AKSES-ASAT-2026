@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useSettings, BG_CLASSES } from "@/lib/settings-context";
 import { Loader2, KeyRound } from "lucide-react";
 import { TimerRing } from "@/components/timer-ring";
+import { AnnouncementBanner } from "@/components/announcement-banner";
 
 export default function EntryPage() {
   const [token, setToken] = useState("");
@@ -62,7 +63,13 @@ export default function EntryPage() {
   };
 
   return (
-    <div className={`min-h-[100dvh] w-full flex flex-col items-center justify-center ${BG_CLASSES[settings.backgroundStyle]}`}>
+    <div className={`min-h-[100dvh] w-full flex flex-col ${BG_CLASSES[settings.backgroundStyle]}`}>
+      <AnnouncementBanner
+        visible={settings.announcementVisible}
+        text={settings.announcementText}
+        type={settings.announcementType}
+      />
+      <div className="flex-1 flex flex-col items-center justify-center">
       <div className="w-full max-w-sm px-6">
         <motion.div
           initial={{ opacity: 0, y: -12 }}
@@ -148,6 +155,7 @@ export default function EntryPage() {
             Panel Admin
           </a>
         </motion.div>
+      </div>
       </div>
     </div>
   );

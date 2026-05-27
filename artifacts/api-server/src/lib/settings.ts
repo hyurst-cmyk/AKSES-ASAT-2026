@@ -23,6 +23,9 @@ const DEFAULT_SETTINGS: StoredSettings = {
   useCustomToken: false,
   customToken: "",
   adminPassword: "",
+  announcementVisible: false,
+  announcementText: "",
+  announcementType: "info" as const,
 };
 
 function ensureDataDir() {

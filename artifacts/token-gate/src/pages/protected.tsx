@@ -1,5 +1,6 @@
 import { useAuth } from "@/lib/auth-context";
 import { useSettings, BG_CLASSES } from "@/lib/settings-context";
+import { AnnouncementBanner } from "@/components/announcement-banner";
 import { useLocation } from "wouter";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -85,6 +86,13 @@ export default function ProtectedPage() {
           </button>
         </div>
       </header>
+
+      <AnnouncementBanner
+        visible={settings.announcementVisible}
+        text={settings.announcementText}
+        type={settings.announcementType}
+        dismissible={false}
+      />
 
       <AnimatePresence>
         {showWarning && (

@@ -7,10 +7,12 @@
  */
 
 export * from './adminSettingsInput';
+export * from './adminSettingsInputAnnouncementType';
 export * from './adminSettingsInputBackgroundStyle';
 export * from './adminSettingsInputPrimaryColor';
 export * from './adminTokenResult';
 export * from './appSettings';
+export * from './appSettingsAnnouncementType';
 export * from './appSettingsBackgroundStyle';
 export * from './appSettingsPrimaryColor';
 export * from './errorResult';

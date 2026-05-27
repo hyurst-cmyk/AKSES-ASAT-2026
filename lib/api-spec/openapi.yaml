@@ -199,6 +199,9 @@ components:
         - inactivityTimeoutSeconds
         - tokenWindowMinutes
         - useCustomToken
+        - announcementVisible
+        - announcementText
+        - announcementType
       properties:
         siteName:
           type: string
@@ -223,6 +226,16 @@ components:
         useCustomToken:
           type: boolean
           description: Whether a fixed custom token is active
+        announcementVisible:
+          type: boolean
+          description: Whether the announcement banner is shown
+        announcementText:
+          type: string
+          description: Text content of the announcement banner
+        announcementType:
+          type: string
+          enum: [info, warning, success]
+          description: Visual style of the announcement banner
 
     AdminSettingsInput:
       type: object
@@ -235,6 +248,9 @@ components:
         - inactivityTimeoutSeconds
         - tokenWindowMinutes
         - useCustomToken
+        - announcementVisible
+        - announcementText
+        - announcementType
       properties:
         siteName:
           type: string
@@ -262,3 +278,10 @@ components:
         adminPassword:
           type: string
           description: New admin password (leave empty to keep current)
+        announcementVisible:
+          type: boolean
+        announcementText:
+          type: string
+        announcementType:
+          type: string
+          enum: [info, warning, success]

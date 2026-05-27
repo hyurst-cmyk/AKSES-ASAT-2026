@@ -3,6 +3,7 @@ import { useGetSettings } from "@workspace/api-client-react";
 
 export type PrimaryColor = "blue" | "indigo" | "emerald" | "rose" | "slate";
 export type BackgroundStyle = "light" | "gray" | "blue-light" | "warm" | "gradient";
+export type AnnouncementType = "info" | "warning" | "success";
 
 export type ExamLink = { label: string; description: string; url: string };
 
@@ -15,6 +16,9 @@ export type AppSettings = {
   inactivityTimeoutSeconds: number;
   tokenWindowMinutes: number;
   useCustomToken: boolean;
+  announcementVisible: boolean;
+  announcementText: string;
+  announcementType: AnnouncementType;
 };
 
 export const THEME_COLORS: Record<PrimaryColor, string> = {
@@ -46,6 +50,9 @@ const DEFAULT: AppSettings = {
   inactivityTimeoutSeconds: 120,
   tokenWindowMinutes: 5,
   useCustomToken: false,
+  announcementVisible: false,
+  announcementText: "",
+  announcementType: "info",
 };
 
 const SettingsContext = createContext<AppSettings>(DEFAULT);

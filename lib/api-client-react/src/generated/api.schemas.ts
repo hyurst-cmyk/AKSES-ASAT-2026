@@ -60,6 +60,18 @@ export const AppSettingsBackgroundStyle = {
   gradient: 'gradient',
 } as const;
 
+/**
+ * Visual style of the announcement banner
+ */
+export type AppSettingsAnnouncementType = typeof AppSettingsAnnouncementType[keyof typeof AppSettingsAnnouncementType];
+
+
+export const AppSettingsAnnouncementType = {
+  info: 'info',
+  warning: 'warning',
+  success: 'success',
+} as const;
+
 export interface AppSettings {
   siteName: string;
   siteDescription: string;
@@ -72,6 +84,12 @@ export interface AppSettings {
   tokenWindowMinutes: number;
   /** Whether a fixed custom token is active */
   useCustomToken: boolean;
+  /** Whether the announcement banner is shown */
+  announcementVisible: boolean;
+  /** Text content of the announcement banner */
+  announcementText: string;
+  /** Visual style of the announcement banner */
+  announcementType: AppSettingsAnnouncementType;
 }
 
 export type AdminSettingsInputPrimaryColor = typeof AdminSettingsInputPrimaryColor[keyof typeof AdminSettingsInputPrimaryColor];
@@ -96,6 +114,15 @@ export const AdminSettingsInputBackgroundStyle = {
   gradient: 'gradient',
 } as const;
 
+export type AdminSettingsInputAnnouncementType = typeof AdminSettingsInputAnnouncementType[keyof typeof AdminSettingsInputAnnouncementType];
+
+
+export const AdminSettingsInputAnnouncementType = {
+  info: 'info',
+  warning: 'warning',
+  success: 'success',
+} as const;
+
 export interface AdminSettingsInput {
   siteName: string;
   siteDescription: string;
@@ -109,5 +136,8 @@ export interface AdminSettingsInput {
   customToken?: string;
   /** New admin password (leave empty to keep current) */
   adminPassword?: string;
+  announcementVisible: boolean;
+  announcementText: string;
+  announcementType: AdminSettingsInputAnnouncementType;
 }
 

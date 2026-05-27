@@ -5,6 +5,7 @@
  * Token Gate API
  * OpenAPI spec version: 0.1.0
  */
+import type { AdminSettingsInputAnnouncementType } from './adminSettingsInputAnnouncementType';
 import type { AdminSettingsInputBackgroundStyle } from './adminSettingsInputBackgroundStyle';
 import type { AdminSettingsInputPrimaryColor } from './adminSettingsInputPrimaryColor';
 import type { ExamLink } from './examLink';
@@ -22,4 +23,7 @@ export interface AdminSettingsInput {
   customToken?: string;
   /** New admin password (leave empty to keep current) */
   adminPassword?: string;
+  announcementVisible: boolean;
+  announcementText: string;
+  announcementType: AdminSettingsInputAnnouncementType;
 }

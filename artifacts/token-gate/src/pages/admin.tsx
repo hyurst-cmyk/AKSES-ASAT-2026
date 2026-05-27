@@ -2,13 +2,13 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShieldCheck, Loader2, ArrowLeft, KeyRound, Link2, Palette,
-  Save, Check, Timer, Lock, Eye, EyeOff, RotateCcw,
+  Save, Check, Timer, Lock, Eye, EyeOff, RotateCcw, Megaphone,
 } from "lucide-react";
 import { TimerRing } from "@/components/timer-ring";
 import { Link } from "wouter";
 import { THEME_COLORS, BG_CLASSES, type PrimaryColor, type BackgroundStyle } from "@/lib/settings-context";
 
-type Tab = "token" | "links" | "appearance" | "timer-token" | "security";
+type Tab = "token" | "links" | "appearance" | "timer-token" | "security" | "announcement";
 
 const THEME_OPTIONS: { value: PrimaryColor; label: string }[] = [
   { value: "blue",    label: "Biru" },
@@ -367,6 +367,93 @@ function TimerTokenTab({ secret }: { secret: string }) {
   );
 }
 
+// ─── Pengumuman tab ───────────────────────────────────────────────────────────
+function AnnouncementTab({ secret }: { secret: string }) {
+  const [visible, setVisible] = useState(false);
+  const [text, setText] = useState("");
+  const [type, setType] = useState<"info" | "warning" | "success">("info");
+  const [loading, setLoading] = useState(true);
+  const { saving, saved, trigger } = useSave();
+
+  useEffect(() => {
+    fetch("/api/settings").then((r) => r.json()).then((d) => {
+      setVisible(d.announcementVisible ?? false);
+      setText(d.announcementText ?? "");
+      setType(d.announcementType ?? "info");
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
+
+  const TYPE_OPTIONS: { value: "info" | "warning" | "success"; label: string; preview: string }[] = [
+    { value: "info",    label: "Info",      preview: "bg-blue-50 border-blue-200 text-blue-800" },
+    { value: "warning", label: "Peringatan", preview: "bg-amber-50 border-amber-200 text-amber-800" },
+    { value: "success", label: "Sukses",    preview: "bg-emerald-50 border-emerald-200 text-emerald-800" },
+  ];
+
+  if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>;
+
+  return (
+    <div className="flex flex-col gap-5 py-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider">Tampilkan Pengumuman</label>
+          <p className="text-xs text-muted-foreground mt-0.5">Tampilkan banner pesan di halaman utama dan halaman ujian.</p>
+        </div>
+        <button
+          onClick={() => setVisible((v) => !v)}
+          className={`relative inline-flex h-6 w-11 rounded-full transition-colors ${visible ? "bg-primary" : "bg-gray-300"}`}
+        >
+          <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform mt-0.5 ${visible ? "translate-x-5" : "translate-x-0.5"}`} />
+        </button>
+      </div>
+
+      <div>
+        <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Isi Pesan</label>
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          rows={3}
+          placeholder="Contoh: Ujian akan dimulai pukul 09.00. Harap tenang dan siapkan peralatan Anda."
+          className="w-full px-3 py-2.5 text-sm border border-border rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white resize-none leading-relaxed"
+        />
+        <p className="text-xs text-muted-foreground mt-1">{text.length} karakter</p>
+      </div>
+
+      <div>
+        <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Jenis Pesan</label>
+        <div className="flex flex-col gap-2">
+          {TYPE_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setType(opt.value)}
+              className={`flex items-center gap-3 p-3 rounded-lg border-2 text-left transition-all ${type === opt.value ? "border-primary" : "border-border hover:border-primary/40"}`}
+            >
+              <div className={`w-3 h-3 rounded-full border ${opt.preview}`} />
+              <span className="text-sm font-medium text-foreground">{opt.label}</span>
+              {text && (
+                <span className={`ml-auto text-xs px-2 py-0.5 rounded border ${opt.preview}`}>Pratinjau</span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {visible && text && (
+        <div className={`rounded-lg border px-4 py-3 text-sm ${
+          type === "info"    ? "bg-blue-50 border-blue-200 text-blue-800" :
+          type === "warning" ? "bg-amber-50 border-amber-200 text-amber-800" :
+                               "bg-emerald-50 border-emerald-200 text-emerald-800"
+        }`}>
+          <p className="text-xs font-medium uppercase tracking-wider mb-1 opacity-60">Pratinjau</p>
+          {text}
+        </div>
+      )}
+
+      <SaveBtn onClick={() => trigger(() => savePartial(secret, { announcementVisible: visible, announcementText: text, announcementType: type }))} saving={saving} saved={saved} />
+    </div>
+  );
+}
+
 // ─── Keamanan tab ─────────────────────────────────────────────────────────────
 function SecurityTab({ secret }: { secret: string }) {
   const [newPassword, setNewPassword] = useState("");
@@ -439,11 +526,12 @@ export default function AdminPage() {
   const [tab, setTab] = useState<Tab>("token");
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: "token",       label: "Token",      icon: <KeyRound className="w-4 h-4" /> },
-    { id: "links",       label: "Link Ujian", icon: <Link2 className="w-4 h-4" /> },
-    { id: "appearance",  label: "Tampilan",   icon: <Palette className="w-4 h-4" /> },
-    { id: "timer-token", label: "Timer",      icon: <Timer className="w-4 h-4" /> },
-    { id: "security",    label: "Keamanan",   icon: <Lock className="w-4 h-4" /> },
+    { id: "token",        label: "Token",        icon: <KeyRound className="w-4 h-4" /> },
+    { id: "links",        label: "Link Ujian",   icon: <Link2 className="w-4 h-4" /> },
+    { id: "appearance",   label: "Tampilan",     icon: <Palette className="w-4 h-4" /> },
+    { id: "timer-token",  label: "Timer",        icon: <Timer className="w-4 h-4" /> },
+    { id: "announcement", label: "Pengumuman",   icon: <Megaphone className="w-4 h-4" /> },
+    { id: "security",     label: "Keamanan",     icon: <Lock className="w-4 h-4" /> },
   ];
 
   return (
@@ -515,11 +603,12 @@ export default function AdminPage() {
                       exit={{ opacity: 0, x: -8 }}
                       transition={{ duration: 0.15 }}
                     >
-                      {tab === "token"       && <TokenTab secret={auth.secret} />}
-                      {tab === "links"       && <LinksTab secret={auth.secret} />}
-                      {tab === "appearance"  && <AppearanceTab secret={auth.secret} />}
-                      {tab === "timer-token" && <TimerTokenTab secret={auth.secret} />}
-                      {tab === "security"    && <SecurityTab secret={auth.secret} />}
+                      {tab === "token"        && <TokenTab secret={auth.secret} />}
+                      {tab === "links"        && <LinksTab secret={auth.secret} />}
+                      {tab === "appearance"   && <AppearanceTab secret={auth.secret} />}
+                      {tab === "timer-token"  && <TimerTokenTab secret={auth.secret} />}
+                      {tab === "announcement" && <AnnouncementTab secret={auth.secret} />}
+                      {tab === "security"     && <SecurityTab secret={auth.secret} />}
                     </motion.div>
                   </AnimatePresence>
                 </div>

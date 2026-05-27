@@ -5,6 +5,7 @@
  * Token Gate API
  * OpenAPI spec version: 0.1.0
  */
+import type { AppSettingsAnnouncementType } from './appSettingsAnnouncementType';
 import type { AppSettingsBackgroundStyle } from './appSettingsBackgroundStyle';
 import type { AppSettingsPrimaryColor } from './appSettingsPrimaryColor';
 import type { ExamLink } from './examLink';
@@ -21,4 +22,10 @@ export interface AppSettings {
   tokenWindowMinutes: number;
   /** Whether a fixed custom token is active */
   useCustomToken: boolean;
+  /** Whether the announcement banner is shown */
+  announcementVisible: boolean;
+  /** Text content of the announcement banner */
+  announcementText: string;
+  /** Visual style of the announcement banner */
+  announcementType: AppSettingsAnnouncementType;
 }

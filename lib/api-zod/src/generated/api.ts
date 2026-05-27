@@ -66,7 +66,10 @@ export const GetSettingsResponse = zod.object({
 })),
   "inactivityTimeoutSeconds": zod.number().describe('Seconds of inactivity before redirect'),
   "tokenWindowMinutes": zod.number().describe('How often the token rotates in minutes'),
-  "useCustomToken": zod.boolean().describe('Whether a fixed custom token is active')
+  "useCustomToken": zod.boolean().describe('Whether a fixed custom token is active'),
+  "announcementVisible": zod.boolean().describe('Whether the announcement banner is shown'),
+  "announcementText": zod.string().describe('Text content of the announcement banner'),
+  "announcementType": zod.enum(['info', 'warning', 'success']).describe('Visual style of the announcement banner')
 })
 
 
@@ -91,7 +94,10 @@ export const UpdateSettingsBody = zod.object({
   "tokenWindowMinutes": zod.number(),
   "useCustomToken": zod.boolean(),
   "customToken": zod.string().optional().describe('Fixed token value (only used when useCustomToken is true)'),
-  "adminPassword": zod.string().optional().describe('New admin password (leave empty to keep current)')
+  "adminPassword": zod.string().optional().describe('New admin password (leave empty to keep current)'),
+  "announcementVisible": zod.boolean(),
+  "announcementText": zod.string(),
+  "announcementType": zod.enum(['info', 'warning', 'success'])
 })
 
 export const UpdateSettingsResponse = zod.object({
@@ -106,7 +112,10 @@ export const UpdateSettingsResponse = zod.object({
 })),
   "inactivityTimeoutSeconds": zod.number().describe('Seconds of inactivity before redirect'),
   "tokenWindowMinutes": zod.number().describe('How often the token rotates in minutes'),
-  "useCustomToken": zod.boolean().describe('Whether a fixed custom token is active')
+  "useCustomToken": zod.boolean().describe('Whether a fixed custom token is active'),
+  "announcementVisible": zod.boolean().describe('Whether the announcement banner is shown'),
+  "announcementText": zod.string().describe('Text content of the announcement banner'),
+  "announcementType": zod.enum(['info', 'warning', 'success']).describe('Visual style of the announcement banner')
 })
 
 
