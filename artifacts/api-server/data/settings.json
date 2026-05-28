@@ -7,17 +7,17 @@
     {
       "label": "Kelas X",
       "description": "Link ujian untuk siswa kelas X",
-      "url": "https://pengumuman-snbt.snpmb.id/"
+      "url": "https://docs.google.com/forms/d/e/1FAIpQLSfAjRASqNvRqsUe-x61Qa9PkzlXSIBJboYKZLLLs0qD8CKqDg/viewform?pli=1&pli=1"
     },
     {
       "label": "Kelas XI",
       "description": "Link ujian untuk siswa kelas XI",
-      "url": "https://pengumuman-snbt.snpmb.id/"
+      "url": "https://docs.google.com/forms/d/e/1FAIpQLSfAjRASqNvRqsUe-x61Qa9PkzlXSIBJboYKZLLLs0qD8CKqDg/viewform?pli=1&pli=1"
     },
     {
       "label": "Kelas XII",
       "description": "Link ujian untuk siswa kelas XII",
-      "url": "https://pengumuman-snbt.snpmb.id/"
+      "url": "https://docs.google.com/forms/d/e/1FAIpQLSfAjRASqNvRqsUe-x61Qa9PkzlXSIBJboYKZLLLs0qD8CKqDg/viewform?pli=1&pli=1"
     }
   ],
   "inactivityTimeoutSeconds": 60,
@@ -26,5 +26,6 @@
   "adminPassword": "SMASMA",
   "announcementVisible": true,
   "announcementText": "Sesi I Pukul 07.00-09.00 (120 Menit).\nManfaatkan waktu sebaik mungkin.",
-  "announcementType": "success"
+  "announcementType": "success",
+  "examLocked": false
 }
