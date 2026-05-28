@@ -7,6 +7,9 @@ import { logger } from "./lib/logger";
 
 const app: Express = express();
 
+// Replit routes all traffic through a reverse proxy — trust the first hop
+app.set("trust proxy", 1);
+
 app.use(
   pinoHttp({
     logger,
