@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+
+const SESSION_KEY = "tg_auth";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -9,10 +11,31 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setAuthenticated] = useState(false);
+  const [isAuthenticated, setAuthState] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem(SESSION_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  const setAuthenticated = (val: boolean) => {
+    try {
+      if (val) {
+        sessionStorage.setItem(SESSION_KEY, "1");
+      } else {
+        sessionStorage.removeItem(SESSION_KEY);
+      }
+    } catch {
+      // sessionStorage not available (private mode, etc.)
+    }
+    setAuthState(val);
+  };
+
+  const logout = () => setAuthenticated(false);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, setAuthenticated, logout: () => setAuthenticated(false) }}>
+    <AuthContext.Provider value={{ isAuthenticated, setAuthenticated, logout }}>
       {children}
     </AuthContext.Provider>
   );
