@@ -1,7 +1,7 @@
 import { useAuth } from "@/lib/auth-context";
 import { useSettings, BG_CLASSES } from "@/lib/settings-context";
 import { AnnouncementBanner } from "@/components/announcement-banner";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LogOut, ShieldCheck, ExternalLink, Clock } from "lucide-react";
@@ -126,24 +126,25 @@ export default function ProtectedPage() {
 
         <div className="flex flex-col gap-3">
           {settings.examLinks.map((item, i) => (
-            <motion.a
+            <motion.div
               key={item.label}
-              href={item.url}
-              target="_blank"
-              rel="noopener noreferrer"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 + i * 0.08 }}
-              className="group flex items-center justify-between bg-white border border-border hover:border-primary hover:shadow-sm rounded-lg px-6 py-5 transition-all duration-200"
             >
-              <div>
-                <h2 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">{item.label}</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">{item.description}</p>
-              </div>
-              <div className="flex items-center gap-2 text-sm font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-4">
-                Buka <ExternalLink className="w-4 h-4" />
-              </div>
-            </motion.a>
+              <Link
+                href={`/exam?url=${encodeURIComponent(item.url)}&label=${encodeURIComponent(item.label)}`}
+                className="group flex items-center justify-between bg-white border border-border hover:border-primary hover:shadow-sm rounded-lg px-6 py-5 transition-all duration-200"
+              >
+                <div>
+                  <h2 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">{item.label}</h2>
+                  <p className="text-sm text-muted-foreground mt-0.5">{item.description}</p>
+                </div>
+                <div className="flex items-center gap-2 text-sm font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-4">
+                  Buka <ExternalLink className="w-4 h-4" />
+                </div>
+              </Link>
+            </motion.div>
           ))}
         </div>
 

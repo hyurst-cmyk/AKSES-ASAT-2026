@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useVerifyToken, useGetTokenStatus } from "@workspace/api-client-react";
 import { useAuth } from "@/lib/auth-context";
 import { useSettings, BG_CLASSES } from "@/lib/settings-context";
-import { Loader2, KeyRound } from "lucide-react";
+import { Loader2, KeyRound, Lock } from "lucide-react";
 import { TimerRing } from "@/components/timer-ring";
 import { AnnouncementBanner } from "@/components/announcement-banner";
 
@@ -70,6 +70,35 @@ export default function EntryPage() {
         type={settings.announcementType}
       />
       <div className="flex-1 flex flex-col items-center justify-center">
+
+      {/* ── Layar terkunci ─────────────────────────────── */}
+      {settings.examLocked && (
+        <motion.div
+          key="locked"
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-sm px-6 text-center flex flex-col items-center gap-5"
+        >
+          <div className="w-16 h-16 rounded-full bg-rose-50 flex items-center justify-center">
+            <Lock className="w-7 h-7 text-rose-500" />
+          </div>
+          <div>
+            <h1 className="text-xl font-semibold text-foreground mb-2">Akses Sedang Dikunci</h1>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Ujian belum dibuka atau sedang dalam jeda. Harap tunggu instruksi dari pengawas.
+            </p>
+          </div>
+          <div className="w-full rounded-lg border border-border bg-white px-5 py-4">
+            <p className="text-xs text-muted-foreground">Halaman ini akan otomatis terbuka saat ujian dimulai.</p>
+          </div>
+          <a href="/admin" className="text-xs text-muted-foreground/50 hover:text-primary transition-colors underline underline-offset-2 mt-2">
+            Panel Admin
+          </a>
+        </motion.div>
+      )}
+
+      {/* ── Form akses normal ──────────────────────────── */}
+      {!settings.examLocked && (
       <div className="w-full max-w-sm px-6">
         <motion.div
           initial={{ opacity: 0, y: -12 }}
@@ -156,6 +185,8 @@ export default function EntryPage() {
           </a>
         </motion.div>
       </div>
+      )}
+
       </div>
     </div>
   );

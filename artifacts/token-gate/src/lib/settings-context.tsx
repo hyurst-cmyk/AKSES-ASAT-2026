@@ -19,6 +19,7 @@ export type AppSettings = {
   announcementVisible: boolean;
   announcementText: string;
   announcementType: AnnouncementType;
+  examLocked: boolean;
 };
 
 export const THEME_COLORS: Record<PrimaryColor, string> = {
@@ -53,6 +54,7 @@ const DEFAULT: AppSettings = {
   announcementVisible: false,
   announcementText: "",
   announcementType: "info",
+  examLocked: false,
 };
 
 const SettingsContext = createContext<AppSettings>(DEFAULT);

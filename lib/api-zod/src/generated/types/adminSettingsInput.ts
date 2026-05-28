@@ -26,4 +26,5 @@ export interface AdminSettingsInput {
   announcementVisible: boolean;
   announcementText: string;
   announcementType: AdminSettingsInputAnnouncementType;
+  examLocked?: boolean;
 }

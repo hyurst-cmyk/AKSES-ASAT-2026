@@ -90,6 +90,8 @@ export interface AppSettings {
   announcementText: string;
   /** Visual style of the announcement banner */
   announcementType: AppSettingsAnnouncementType;
+  /** When true, new students cannot enter — entry page shows a locked screen */
+  examLocked?: boolean;
 }
 
 export type AdminSettingsInputPrimaryColor = typeof AdminSettingsInputPrimaryColor[keyof typeof AdminSettingsInputPrimaryColor];
@@ -139,5 +141,6 @@ export interface AdminSettingsInput {
   announcementVisible: boolean;
   announcementText: string;
   announcementType: AdminSettingsInputAnnouncementType;
+  examLocked?: boolean;
 }
 

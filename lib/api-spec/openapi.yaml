@@ -236,6 +236,9 @@ components:
           type: string
           enum: [info, warning, success]
           description: Visual style of the announcement banner
+        examLocked:
+          type: boolean
+          description: When true, new students cannot enter — entry page shows a locked screen
 
     AdminSettingsInput:
       type: object
@@ -285,3 +288,5 @@ components:
         announcementType:
           type: string
           enum: [info, warning, success]
+        examLocked:
+          type: boolean

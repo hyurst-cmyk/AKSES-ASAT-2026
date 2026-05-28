@@ -26,6 +26,7 @@ const DEFAULT_SETTINGS: StoredSettings = {
   announcementVisible: false,
   announcementText: "",
   announcementType: "info" as const,
+  examLocked: false,
 };
 
 function ensureDataDir() {

@@ -8,6 +8,7 @@ import NotFound from "@/pages/not-found";
 import EntryPage from "@/pages/entry";
 import ProtectedPage from "@/pages/protected";
 import AdminPage from "@/pages/admin";
+import ExamPage from "@/pages/exam";
 
 const queryClient = new QueryClient();
 
@@ -16,6 +17,7 @@ function Router() {
     <Switch>
       <Route path="/" component={EntryPage} />
       <Route path="/protected" component={ProtectedPage} />
+      <Route path="/exam" component={ExamPage} />
       <Route path="/admin" component={AdminPage} />
       <Route component={NotFound} />
     </Switch>

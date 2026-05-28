@@ -69,7 +69,8 @@ export const GetSettingsResponse = zod.object({
   "useCustomToken": zod.boolean().describe('Whether a fixed custom token is active'),
   "announcementVisible": zod.boolean().describe('Whether the announcement banner is shown'),
   "announcementText": zod.string().describe('Text content of the announcement banner'),
-  "announcementType": zod.enum(['info', 'warning', 'success']).describe('Visual style of the announcement banner')
+  "announcementType": zod.enum(['info', 'warning', 'success']).describe('Visual style of the announcement banner'),
+  "examLocked": zod.boolean().optional().describe('When true, new students cannot enter — entry page shows a locked screen')
 })
 
 
@@ -97,7 +98,8 @@ export const UpdateSettingsBody = zod.object({
   "adminPassword": zod.string().optional().describe('New admin password (leave empty to keep current)'),
   "announcementVisible": zod.boolean(),
   "announcementText": zod.string(),
-  "announcementType": zod.enum(['info', 'warning', 'success'])
+  "announcementType": zod.enum(['info', 'warning', 'success']),
+  "examLocked": zod.boolean().optional()
 })
 
 export const UpdateSettingsResponse = zod.object({
@@ -115,7 +117,8 @@ export const UpdateSettingsResponse = zod.object({
   "useCustomToken": zod.boolean().describe('Whether a fixed custom token is active'),
   "announcementVisible": zod.boolean().describe('Whether the announcement banner is shown'),
   "announcementText": zod.string().describe('Text content of the announcement banner'),
-  "announcementType": zod.enum(['info', 'warning', 'success']).describe('Visual style of the announcement banner')
+  "announcementType": zod.enum(['info', 'warning', 'success']).describe('Visual style of the announcement banner'),
+  "examLocked": zod.boolean().optional().describe('When true, new students cannot enter — entry page shows a locked screen')
 })
 
 

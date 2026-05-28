@@ -96,9 +96,14 @@ function useSave() {
 function TokenTab({ secret }: { secret: string }) {
   const [data, setData] = useState<{ token: string; secondsRemaining: number } | null>(null);
   const [useCustom, setUseCustom] = useState(false);
+  const [examLocked, setExamLocked] = useState(false);
+  const [lockSaving, setLockSaving] = useState(false);
 
   useEffect(() => {
-    fetch("/api/settings").then((r) => r.json()).then((d) => setUseCustom(d.useCustomToken ?? false));
+    fetch("/api/settings").then((r) => r.json()).then((d) => {
+      setUseCustom(d.useCustomToken ?? false);
+      setExamLocked(d.examLocked ?? false);
+    });
   }, []);
 
   useEffect(() => {
@@ -113,8 +118,40 @@ function TokenTab({ secret }: { secret: string }) {
     return () => clearInterval(iv);
   }, [secret]);
 
+  const toggleLock = async () => {
+    const next = !examLocked;
+    setExamLocked(next);
+    setLockSaving(true);
+    try {
+      await savePartial(secret, { examLocked: next });
+    } catch {
+      setExamLocked(!next);
+    } finally {
+      setLockSaving(false);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center py-6 gap-5">
+      {/* Kunci Ujian toggle */}
+      <div className={`w-full rounded-lg border-2 px-4 py-4 flex items-center justify-between gap-4 transition-colors ${examLocked ? "border-rose-300 bg-rose-50" : "border-border bg-white"}`}>
+        <div>
+          <p className={`text-sm font-semibold ${examLocked ? "text-rose-700" : "text-foreground"}`}>
+            {examLocked ? "Ujian Sedang Dikunci" : "Kunci Ujian"}
+          </p>
+          <p className={`text-xs mt-0.5 ${examLocked ? "text-rose-600" : "text-muted-foreground"}`}>
+            {examLocked ? "Siswa tidak dapat mengakses halaman masuk." : "Klik untuk memblokir akses siswa sementara."}
+          </p>
+        </div>
+        <button
+          onClick={toggleLock}
+          disabled={lockSaving}
+          className={`relative inline-flex h-7 w-14 rounded-full transition-colors disabled:opacity-60 ${examLocked ? "bg-rose-500" : "bg-gray-300"}`}
+        >
+          <span className={`inline-block h-6 w-6 rounded-full bg-white shadow transform transition-transform mt-0.5 ${examLocked ? "translate-x-7" : "translate-x-0.5"}`} />
+        </button>
+      </div>
+
       {useCustom && (
         <div className="w-full rounded-md bg-amber-50 border border-amber-200 px-4 py-2.5 text-sm text-amber-800 text-center">
           Token tetap (custom) sedang aktif

@@ -20,9 +20,11 @@
       "url": "https://pengumuman-snbt.snpmb.id/"
     }
   ],
-  "inactivityTimeoutSeconds": 30,
+  "inactivityTimeoutSeconds": 60,
   "tokenWindowMinutes": 5,
   "useCustomToken": false,
-  "customToken": "",
-  "adminPassword": "SMASMA"
+  "adminPassword": "SMASMA",
+  "announcementVisible": true,
+  "announcementText": "Sesi I Pukul 07.00-09.00 (120 Menit).\nManfaatkan waktu sebaik mungkin.",
+  "announcementType": "success"
 }
