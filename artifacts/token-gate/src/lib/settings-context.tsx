@@ -60,7 +60,7 @@ const DEFAULT: AppSettings = {
 const SettingsContext = createContext<AppSettings>(DEFAULT);
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
-  const { data } = useGetSettings({ query: { refetchOnWindowFocus: false } });
+  const { data } = useGetSettings({ query: { refetchOnWindowFocus: true, refetchInterval: 5000 } });
 
   const settings: AppSettings = data
     ? {

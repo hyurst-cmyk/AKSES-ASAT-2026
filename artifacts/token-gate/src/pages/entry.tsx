@@ -1,12 +1,87 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useVerifyToken, useGetTokenStatus } from "@workspace/api-client-react";
 import { useAuth } from "@/lib/auth-context";
 import { useSettings, BG_CLASSES } from "@/lib/settings-context";
-import { Loader2, KeyRound, Lock } from "lucide-react";
+import { Loader2, KeyRound, Lock, RefreshCw } from "lucide-react";
 import { TimerRing } from "@/components/timer-ring";
 import { AnnouncementBanner } from "@/components/announcement-banner";
+
+const CHECK_INTERVAL = 5; // seconds, must match refetchInterval in settings-context
+
+function LockedScreen() {
+  const [countdown, setCountdown] = useState(CHECK_INTERVAL);
+
+  useEffect(() => {
+    setCountdown(CHECK_INTERVAL);
+    const iv = setInterval(() => {
+      setCountdown((c) => {
+        if (c <= 1) return CHECK_INTERVAL;
+        return c - 1;
+      });
+    }, 1000);
+    return () => clearInterval(iv);
+  }, []);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.97 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.97 }}
+      transition={{ duration: 0.3 }}
+      className="w-full max-w-sm px-6 text-center flex flex-col items-center gap-6"
+    >
+      {/* Icon */}
+      <div className="w-16 h-16 rounded-full bg-rose-50 border-2 border-rose-100 flex items-center justify-center">
+        <Lock className="w-7 h-7 text-rose-500" />
+      </div>
+
+      {/* Title */}
+      <div>
+        <h1 className="text-xl font-semibold text-foreground mb-2">Akses Sedang Dikunci</h1>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Ujian belum dibuka atau sedang dalam jeda.<br />Harap tunggu instruksi dari pengawas.
+        </p>
+      </div>
+
+      {/* Auto-check indicator */}
+      <div className="w-full rounded-lg border border-border bg-white px-5 py-4 flex flex-col items-center gap-3">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <RefreshCw className="w-3.5 h-3.5" />
+          <span className="text-xs">Halaman ini memeriksa otomatis setiap {CHECK_INTERVAL} detik</span>
+        </div>
+
+        {/* Countdown bar */}
+        <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-rose-400 rounded-full"
+            initial={{ width: "100%" }}
+            animate={{ width: `${(countdown / CHECK_INTERVAL) * 100}%` }}
+            transition={{ duration: 1, ease: "linear" }}
+          />
+        </div>
+
+        <p className="text-xs text-muted-foreground tabular-nums">
+          Pemeriksaan berikutnya dalam{" "}
+          <span className="font-semibold text-foreground">{countdown}d</span>
+        </p>
+      </div>
+
+      {/* Will auto-unlock note */}
+      <p className="text-xs text-muted-foreground/70">
+        Halaman akan otomatis terbuka saat pengawas membuka akses.
+      </p>
+
+      <a
+        href="/admin"
+        className="text-xs text-muted-foreground/40 hover:text-primary transition-colors underline underline-offset-2"
+      >
+        Panel Admin
+      </a>
+    </motion.div>
+  );
+}
 
 export default function EntryPage() {
   const [token, setToken] = useState("");
@@ -72,30 +147,11 @@ export default function EntryPage() {
       <div className="flex-1 flex flex-col items-center justify-center">
 
       {/* ── Layar terkunci ─────────────────────────────── */}
+      <AnimatePresence mode="wait">
       {settings.examLocked && (
-        <motion.div
-          key="locked"
-          initial={{ opacity: 0, scale: 0.97 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-sm px-6 text-center flex flex-col items-center gap-5"
-        >
-          <div className="w-16 h-16 rounded-full bg-rose-50 flex items-center justify-center">
-            <Lock className="w-7 h-7 text-rose-500" />
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold text-foreground mb-2">Akses Sedang Dikunci</h1>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Ujian belum dibuka atau sedang dalam jeda. Harap tunggu instruksi dari pengawas.
-            </p>
-          </div>
-          <div className="w-full rounded-lg border border-border bg-white px-5 py-4">
-            <p className="text-xs text-muted-foreground">Halaman ini akan otomatis terbuka saat ujian dimulai.</p>
-          </div>
-          <a href="/admin" className="text-xs text-muted-foreground/50 hover:text-primary transition-colors underline underline-offset-2 mt-2">
-            Panel Admin
-          </a>
-        </motion.div>
+        <LockedScreen key="locked" />
       )}
+      </AnimatePresence>
 
       {/* ── Form akses normal ──────────────────────────── */}
       {!settings.examLocked && (
