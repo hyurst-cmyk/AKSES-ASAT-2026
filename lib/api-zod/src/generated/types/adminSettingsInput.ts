@@ -27,4 +27,5 @@ export interface AdminSettingsInput {
   announcementText: string;
   announcementType: AdminSettingsInputAnnouncementType;
   examLocked?: boolean;
+  sessionDurationMinutes?: number;
 }

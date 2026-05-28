@@ -70,7 +70,8 @@ export const GetSettingsResponse = zod.object({
   "announcementVisible": zod.boolean().describe('Whether the announcement banner is shown'),
   "announcementText": zod.string().describe('Text content of the announcement banner'),
   "announcementType": zod.enum(['info', 'warning', 'success']).describe('Visual style of the announcement banner'),
-  "examLocked": zod.boolean().optional().describe('When true, new students cannot enter — entry page shows a locked screen')
+  "examLocked": zod.boolean().optional().describe('When true, new students cannot enter — entry page shows a locked screen'),
+  "sessionDurationMinutes": zod.number().optional().describe('Maximum session length in minutes after login (0 = unlimited)')
 })
 
 
@@ -99,7 +100,8 @@ export const UpdateSettingsBody = zod.object({
   "announcementVisible": zod.boolean(),
   "announcementText": zod.string(),
   "announcementType": zod.enum(['info', 'warning', 'success']),
-  "examLocked": zod.boolean().optional()
+  "examLocked": zod.boolean().optional(),
+  "sessionDurationMinutes": zod.number().optional()
 })
 
 export const UpdateSettingsResponse = zod.object({
@@ -118,7 +120,8 @@ export const UpdateSettingsResponse = zod.object({
   "announcementVisible": zod.boolean().describe('Whether the announcement banner is shown'),
   "announcementText": zod.string().describe('Text content of the announcement banner'),
   "announcementType": zod.enum(['info', 'warning', 'success']).describe('Visual style of the announcement banner'),
-  "examLocked": zod.boolean().optional().describe('When true, new students cannot enter — entry page shows a locked screen')
+  "examLocked": zod.boolean().optional().describe('When true, new students cannot enter — entry page shows a locked screen'),
+  "sessionDurationMinutes": zod.number().optional().describe('Maximum session length in minutes after login (0 = unlimited)')
 })
 
 

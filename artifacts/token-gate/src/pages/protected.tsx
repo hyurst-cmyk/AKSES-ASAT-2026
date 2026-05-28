@@ -8,6 +8,34 @@ import { LogOut, ShieldCheck, ExternalLink, Clock } from "lucide-react";
 
 const WARNING_SECONDS = 30;
 
+function useSessionCountdown(
+  loginTime: number | null,
+  sessionDurationMinutes: number,
+  onExpire: () => void
+): number | null {
+  const [remaining, setRemaining] = useState<number | null>(null);
+  const onExpireRef = useRef(onExpire);
+  onExpireRef.current = onExpire;
+
+  useEffect(() => {
+    if (!loginTime || !sessionDurationMinutes) {
+      setRemaining(null);
+      return;
+    }
+    const durationMs = sessionDurationMinutes * 60 * 1000;
+    const calc = () => {
+      const left = Math.max(0, Math.floor((loginTime + durationMs - Date.now()) / 1000));
+      setRemaining(left);
+      if (left <= 0) onExpireRef.current();
+    };
+    calc();
+    const iv = setInterval(calc, 1000);
+    return () => clearInterval(iv);
+  }, [loginTime, sessionDurationMinutes]);
+
+  return remaining;
+}
+
 function useInactivityTimeout(timeoutSeconds: number, onTimeout: () => void) {
   const [secondsLeft, setSecondsLeft] = useState(timeoutSeconds);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -40,7 +68,7 @@ function useInactivityTimeout(timeoutSeconds: number, onTimeout: () => void) {
 }
 
 export default function ProtectedPage() {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, loginTime, logout } = useAuth();
   const settings = useSettings();
   const [, setLocation] = useLocation();
 
@@ -50,9 +78,13 @@ export default function ProtectedPage() {
   }, [logout, setLocation]);
 
   const secondsLeft = useInactivityTimeout(settings.inactivityTimeoutSeconds, handleTimeout);
-  const showWarning = secondsLeft <= WARNING_SECONDS;
-  const minutes = Math.floor(secondsLeft / 60);
-  const seconds = secondsLeft % 60;
+  const sessionSecondsLeft = useSessionCountdown(loginTime, settings.sessionDurationMinutes, handleTimeout);
+
+  // Display: prefer session timer if active, else inactivity
+  const displaySeconds = sessionSecondsLeft ?? secondsLeft;
+  const showWarning = displaySeconds <= WARNING_SECONDS;
+  const displayMinutes = Math.floor(displaySeconds / 60);
+  const displaySecs = displaySeconds % 60;
 
   useEffect(() => {
     if (!isAuthenticated) setLocation("/");
@@ -71,9 +103,9 @@ export default function ProtectedPage() {
           <div className={`hidden sm:flex items-center gap-1.5 text-xs transition-colors ${showWarning ? "text-amber-600" : "text-muted-foreground"}`}>
             <Clock className="w-3.5 h-3.5" />
             <span>
-              Sesi berakhir dalam{" "}
+              {sessionSecondsLeft != null ? "Sesi ujian" : "Sesi berakhir dalam"}{" "}
               <span className="font-mono font-semibold tabular-nums">
-                {minutes}:{seconds.toString().padStart(2, "0")}
+                {displayMinutes}:{displaySecs.toString().padStart(2, "0")}
               </span>
             </span>
           </div>

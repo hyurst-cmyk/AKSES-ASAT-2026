@@ -1,3 +1,4 @@
+// @refresh reset
 import { createContext, useContext, useEffect } from "react";
 import { useGetSettings } from "@workspace/api-client-react";
 
@@ -20,6 +21,7 @@ export type AppSettings = {
   announcementText: string;
   announcementType: AnnouncementType;
   examLocked: boolean;
+  sessionDurationMinutes: number;
 };
 
 export const THEME_COLORS: Record<PrimaryColor, string> = {
@@ -55,6 +57,7 @@ const DEFAULT: AppSettings = {
   announcementText: "",
   announcementType: "info",
   examLocked: false,
+  sessionDurationMinutes: 120,
 };
 
 const SettingsContext = createContext<AppSettings>(DEFAULT);

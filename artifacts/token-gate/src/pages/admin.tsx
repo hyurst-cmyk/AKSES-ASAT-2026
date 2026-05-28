@@ -296,6 +296,7 @@ function AppearanceTab({ secret }: { secret: string }) {
 // ─── Timer & Token tab ────────────────────────────────────────────────────────
 function TimerTokenTab({ secret }: { secret: string }) {
   const [inactivityTimeout, setInactivityTimeout] = useState(120);
+  const [sessionDurationMinutes, setSessionDurationMinutes] = useState(120);
   const [tokenWindowMinutes, setTokenWindowMinutes] = useState(5);
   const [useCustomToken, setUseCustomToken] = useState(false);
   const [customToken, setCustomToken] = useState("");
@@ -305,6 +306,7 @@ function TimerTokenTab({ secret }: { secret: string }) {
   useEffect(() => {
     fetch("/api/settings").then((r) => r.json()).then((d) => {
       if (d.inactivityTimeoutSeconds) setInactivityTimeout(d.inactivityTimeoutSeconds);
+      if (d.sessionDurationMinutes) setSessionDurationMinutes(d.sessionDurationMinutes);
       if (d.tokenWindowMinutes) setTokenWindowMinutes(d.tokenWindowMinutes);
       if (typeof d.useCustomToken === "boolean") setUseCustomToken(d.useCustomToken);
       setLoading(false);
@@ -320,12 +322,39 @@ function TimerTokenTab({ secret }: { secret: string }) {
 
   return (
     <div className="flex flex-col gap-6 py-4">
-      {/* Inactivity timeout */}
+      {/* Session duration */}
       <div>
         <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
-          Timer Inaktivitas Sesi
+          Durasi Sesi Ujian
         </label>
-        <p className="text-xs text-muted-foreground mb-3">Siswa akan keluar otomatis jika tidak ada aktivitas selama waktu ini.</p>
+        <p className="text-xs text-muted-foreground mb-3">Berapa lama siswa bisa mengakses ujian setelah masuk. Sesi akan berakhir otomatis. (0 = tidak terbatas)</p>
+        <div className="grid grid-cols-4 gap-2">
+          {[60, 90, 120, 180].map((m) => (
+            <button key={m} onClick={() => setSessionDurationMinutes(m)}
+              className={`py-2 text-sm rounded-md border-2 font-medium transition-all ${sessionDurationMinutes === m ? "border-primary text-primary" : "border-border text-muted-foreground hover:border-primary/50"}`}>
+              {m}m
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2 mt-2">
+          <input
+            type="number"
+            min={0}
+            max={480}
+            value={sessionDurationMinutes}
+            onChange={(e) => setSessionDurationMinutes(Number(e.target.value))}
+            className="w-24 h-9 px-3 text-sm border border-border rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white"
+          />
+          <span className="text-sm text-muted-foreground">menit</span>
+        </div>
+      </div>
+
+      {/* Inactivity timeout */}
+      <div className="border-t border-border pt-5">
+        <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+          Timer Inaktivitas
+        </label>
+        <p className="text-xs text-muted-foreground mb-3">Siswa keluar otomatis jika tidak ada aktivitas selama waktu ini.</p>
         <div className="grid grid-cols-4 gap-2">
           {[60, 120, 180, 300].map((s) => (
             <button key={s} onClick={() => setInactivityTimeout(s)}
@@ -393,6 +422,7 @@ function TimerTokenTab({ secret }: { secret: string }) {
       <SaveBtn
         onClick={() => trigger(() => savePartial(secret, {
           inactivityTimeoutSeconds: inactivityTimeout,
+          sessionDurationMinutes,
           tokenWindowMinutes,
           useCustomToken,
           customToken: useCustomToken ? customToken : "",

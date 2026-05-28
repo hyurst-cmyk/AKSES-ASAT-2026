@@ -92,6 +92,8 @@ export interface AppSettings {
   announcementType: AppSettingsAnnouncementType;
   /** When true, new students cannot enter — entry page shows a locked screen */
   examLocked?: boolean;
+  /** Maximum session length in minutes after login (0 = unlimited) */
+  sessionDurationMinutes?: number;
 }
 
 export type AdminSettingsInputPrimaryColor = typeof AdminSettingsInputPrimaryColor[keyof typeof AdminSettingsInputPrimaryColor];
@@ -142,5 +144,6 @@ export interface AdminSettingsInput {
   announcementText: string;
   announcementType: AdminSettingsInputAnnouncementType;
   examLocked?: boolean;
+  sessionDurationMinutes?: number;
 }
 

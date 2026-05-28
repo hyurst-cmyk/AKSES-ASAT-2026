@@ -239,6 +239,9 @@ components:
         examLocked:
           type: boolean
           description: When true, new students cannot enter — entry page shows a locked screen
+        sessionDurationMinutes:
+          type: integer
+          description: Maximum session length in minutes after login (0 = unlimited)
 
     AdminSettingsInput:
       type: object
@@ -290,3 +293,5 @@ components:
           enum: [info, warning, success]
         examLocked:
           type: boolean
+        sessionDurationMinutes:
+          type: integer

@@ -27,6 +27,7 @@ const DEFAULT_SETTINGS: StoredSettings = {
   announcementText: "",
   announcementType: "info" as const,
   examLocked: false,
+  sessionDurationMinutes: 120,
 };
 
 function ensureDataDir() {
